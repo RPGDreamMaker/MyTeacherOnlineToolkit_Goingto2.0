@@ -98,9 +98,7 @@ export const useSeatingStore = create<SeatingState>()(
             }
           },
           currentScoreSetId: defaultScoreSetId,
-          lockedSeats: [],
-          selectedStudents: [],
-          absentStudents: []
+          lockedSeats: []
         };
 
         set(state => ({
@@ -195,9 +193,7 @@ export const useSeatingStore = create<SeatingState>()(
           classId: sourcePlan.classId,
           scoreSets: newScoreSets,
           currentScoreSetId: resetScores ? defaultScoreSetId : Object.keys(newScoreSets)[0],
-          lockedSeats: [...sourcePlan.lockedSeats],
-          selectedStudents: [...(sourcePlan.selectedStudents || [])],
-          absentStudents: [...(sourcePlan.absentStudents || [])]
+          lockedSeats: [...sourcePlan.lockedSeats]
         };
 
         set(state => ({
@@ -600,20 +596,10 @@ export const useSeatingStore = create<SeatingState>()(
                     [currentScoreSet.id]: {
                       ...plan.scoreSets[currentScoreSet.id],
                       scores: Object.fromEntries(
-                        currentPlan.seats
-                          .filter(seat => !get().isStudentAbsent(seat.studentId))
-                          .map(seat => [
-                            seat.studentId,
-                            Math.max(0, score)
-                          ])
-                          .concat(
-                            currentPlan.seats
-                              .filter(seat => get().isStudentAbsent(seat.studentId))
-                              .map(seat => [
-                                seat.studentId,
-                                currentScoreSet.scores[seat.studentId] || 0
-                              ])
-                          )
+                    currentPlan.seats.map(seat => [
+                      seat.studentId,
+                      Math.max(0, score)
+                    ])
                       )
                     }
                   },
@@ -750,7 +736,8 @@ export const useSeatingStore = create<SeatingState>()(
       name: 'seating-storage',
       partialize: (state) => ({
         plans: state.plans,
-        currentPlanId: state.currentPlanId
+        currentPlanId: state.currentPlanId,
+        students: state.students
       })
     }
   )

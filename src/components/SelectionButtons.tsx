@@ -115,20 +115,41 @@ export default function SelectionButtons() {
       
       <div className="mt-4 pt-4 border-t border-gray-200">
         <h4 className="text-sm font-medium text-gray-700 mb-3">Select Students by Score</h4>
-        <div className="grid grid-cols-10 gap-1">
-          {Array.from({ length: 21 }, (_, i) => (
+        <div className="space-y-1">
+          <div className="grid grid-cols-11 gap-1">
+            {Array.from({ length: 11 }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => handleScoreSelection(i)}
+                disabled={isLoading}
+                className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+              >
+                {i}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-11 gap-1">
+            {Array.from({ length: 10 }, (_, i) => (
+              <button
+                key={i + 11}
+                onClick={() => handleScoreSelection(i + 11)}
+                disabled={isLoading}
+                className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+              >
+                {i + 11}
+              </button>
+            ))}
             <button
-              key={i}
-              onClick={() => handleScoreSelection(i)}
+              onClick={() => handleScoreSelection('20+')}
               disabled={isLoading}
               className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
             >
-              {i}
+              20+
             </button>
-          ))}
+          </div>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Click a number to highlight all students with that exact score
+          Click a number to highlight all students with that exact score, or "20+" for students with more than 20 points
         </p>
       </div>
     </div>

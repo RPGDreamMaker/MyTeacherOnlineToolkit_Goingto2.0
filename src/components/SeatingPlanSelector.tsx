@@ -195,10 +195,9 @@ export default function SeatingPlanSelector() {
               <select
                 value={currentPlan?.id || ''}
                 onChange={(e) => switchPlan(e.target.value)}
-                className="form-input"
+                className="form-input text-white font-bold"
                 style={{
-                  backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
-                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
+                  backgroundColor: currentPlan?.color || '#d50f25'
                 }}
               >
                 {plans.map((plan) => (
@@ -206,8 +205,8 @@ export default function SeatingPlanSelector() {
                     key={plan.id} 
                     value={plan.id}
                     style={{
-                      backgroundColor: `${plan.color || '#d50f25'}20`,
-                      color: '#000'
+                      backgroundColor: plan.color || '#d50f25',
+                      color: 'white'
                     }}
                   >
                     {plan.name}

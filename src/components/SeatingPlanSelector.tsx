@@ -133,14 +133,13 @@ export default function SeatingPlanSelector() {
     id: string;
     name: string;
     description: string;
-    color?: string;
   } | null>(null);
 
   const plans = classId ? getPlansForClass(classId) : [];
   const currentPlan = getCurrentPlan();
   const currentScoreSet = getCurrentScoreSet();
 
-  function handleEdit(plan: { id: string; name: string; description: string; color?: string }) {
+  function handleEdit(plan: { id: string; name: string; description: string }) {
     setEditingPlan(plan);
     setIsEditModalOpen(true);
   }
@@ -197,17 +196,18 @@ export default function SeatingPlanSelector() {
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
                 style={{
-                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
-                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                  backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
+                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
                 }}
               >
                 {plans.map((plan) => (
                   <option 
                     key={plan.id} 
-                    style={{
-                      backgroundColor: plan.color ? `${plan.color}20` : undefined
-                    }}
                     value={plan.id}
+                    style={{
+                      backgroundColor: plan.color || '#d50f25',
+                      color: '#000'
+                    }}
                   >
                     {plan.name}
                   </option>

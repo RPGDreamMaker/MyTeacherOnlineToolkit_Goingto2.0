@@ -514,6 +514,16 @@ export const useSeatingStore = create<SeatingState>()(
         
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
+        // Only update scores for students who are currently assigned to seats (not unassigned)
+        const assignedStudentIds = new Set(currentPlan.seats.map(seat => seat.studentId));
+        const updatedScores = { ...currentScoreSet.scores };
+        
+        // Only modify scores for students who are currently assigned to seats
+        currentPlan.seats
+          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
+          .forEach(seat => {
+            updatedScores[seat.studentId] = Math.max(0, (currentScoreSet.scores[seat.studentId] || 0) + delta);
+          });
         set(state => ({
           plans: state.plans.map(plan =>
             plan.id === currentPlan.id
@@ -523,14 +533,7 @@ export const useSeatingStore = create<SeatingState>()(
                     ...plan.scoreSets,
                     [currentScoreSet.id]: {
                       ...plan.scoreSets[currentScoreSet.id],
-                      scores: Object.fromEntries(
-                        currentPlan.seats
-                          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
-                          .map(seat => [
-                            seat.studentId,
-                            Math.max(0, (currentScoreSet.scores[seat.studentId] || 0) + delta)
-                          ])
-                      )
+                      scores: updatedScores
                     }
                   },
                   modifiedAt: new Date().toISOString()
@@ -547,6 +550,15 @@ export const useSeatingStore = create<SeatingState>()(
         
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
+        // Only update scores for students who are currently assigned to seats (not unassigned)
+        const updatedScores = { ...currentScoreSet.scores };
+        
+        // Only modify scores for students who are currently assigned to seats
+        currentPlan.seats
+          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
+          .forEach(seat => {
+            updatedScores[seat.studentId] = Math.max(0, score);
+          });
         set(state => ({
           plans: state.plans.map(plan =>
             plan.id === currentPlan.id
@@ -556,14 +568,7 @@ export const useSeatingStore = create<SeatingState>()(
                     ...plan.scoreSets,
                     [currentScoreSet.id]: {
                       ...plan.scoreSets[currentScoreSet.id],
-                      scores: Object.fromEntries(
-                        currentPlan.seats
-                          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
-                          .map(seat => [
-                            seat.studentId,
-                            Math.max(0, score)
-                          ])
-                      )
+                      scores: updatedScores
                     }
                   },
                   modifiedAt: new Date().toISOString()

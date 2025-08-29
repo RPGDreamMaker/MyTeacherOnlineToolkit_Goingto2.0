@@ -206,6 +206,7 @@ export default function SeatingPlanSelector() {
                     key={plan.id} 
                     style={{
                       backgroundColor: plan.color ? `${plan.color}20` : undefined
+                      fontWeight: 'bold'
                     }}
                     value={plan.id}
                   >

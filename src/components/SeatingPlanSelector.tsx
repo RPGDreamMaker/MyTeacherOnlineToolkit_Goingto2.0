@@ -269,9 +269,6 @@ export default function SeatingPlanSelector() {
                 disabled={!currentScoreSet}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                 title="Rename selected score set"
-                style={{
-                  color: currentScoreSet?.color || undefined
-                }}
               >
                 <Pencil className="h-4 w-4" />
               </button>

@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useSeatingStore } from '../store/seating';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, UserCheck, UserX } from 'lucide-react';
 import { useState } from 'react';
 
 interface StudentCardProps {
@@ -15,7 +15,7 @@ export default function StudentCard({
   onDragStart 
 }: StudentCardProps) {
   const { classId } = useParams<{ classId: string }>();
-  const { getStudent, updateStudentScore, getCurrentPlan, getCurrentScoreSet } = useSeatingStore();
+  const { getStudent, updateStudentScore, getCurrentPlan, getCurrentScoreSet, isStudentAbsent, toggleStudentAbsent } = useSeatingStore();
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTimeout, setTooltipTimeout] = useState<number | null>(null);
   
@@ -24,6 +24,7 @@ export default function StudentCard({
   const student = getStudent(studentId, classId);
   const currentPlan = getCurrentPlan();
   const currentScoreSet = getCurrentScoreSet();
+  const isAbsent = isStudentAbsent(studentId);
   const score = currentScoreSet?.scores?.[studentId] ?? 0;
 
   if (!student) return null;

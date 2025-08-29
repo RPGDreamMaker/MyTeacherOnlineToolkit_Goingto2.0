@@ -196,6 +196,10 @@ export default function SeatingPlanSelector() {
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
                 style={{
+                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
+                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                }}
+                style={{
                   backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
                   borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
                 }}
@@ -206,6 +210,13 @@ export default function SeatingPlanSelector() {
                     value={plan.id}
                     style={{
                       backgroundColor: plan.color || '#d50f25',
+                      color: '#000'
+                    }}
+                  <option 
+                    key={id} 
+                    value={id}
+                    style={{
+                      backgroundColor: scoreSet.color || '#3369e8',
                       color: '#000'
                     }}
                   >

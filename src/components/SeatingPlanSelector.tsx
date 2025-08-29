@@ -262,8 +262,7 @@ export default function SeatingPlanSelector() {
                     <option 
                       key={id} 
                       value={id}
-                        backgroundColor: plan.color ? `${plan.color}20` : undefined,
-                        fontWeight: 'bold'
+                      style={{
                         backgroundColor: scoreSet.color ? `${scoreSet.color}20` : undefined,
                         fontWeight: 'bold'
                       }}

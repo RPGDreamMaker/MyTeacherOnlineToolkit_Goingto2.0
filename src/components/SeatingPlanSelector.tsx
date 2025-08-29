@@ -3,20 +3,31 @@ import { useParams } from 'react-router-dom';
 import { useSeatingStore } from '../store/seating';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
 
+// Color options matching the wheel of names
+const COLOR_OPTIONS = [
+  { value: '#d50f25', name: 'Red', class: 'bg-red-600' },
+  { value: '#3369e8', name: 'Blue', class: 'bg-blue-600' },
+  { value: '#eeb211', name: 'Yellow', class: 'bg-yellow-500' },
+  { value: '#009925', name: 'Green', class: 'bg-green-600' },
+];
+
 interface EditPlanModalProps {
   isOpen: boolean;
   onClose: () => void;
   planId?: string;
   initialName?: string;
+  initialColor?: string;
 }
 
 function EditPlanModal({
   isOpen,
   onClose,
   planId,
-  initialName = ''
+  initialName = '',
+  initialColor = '#d50f25'
 }: EditPlanModalProps) {
   const [name, setName] = useState(initialName);
+  const [color, setColor] = useState(initialColor);
   const { createPlan, updatePlan } = useSeatingStore();
   const { classId } = useParams<{ classId: string }>();
 
@@ -27,9 +38,9 @@ function EditPlanModal({
     if (!name.trim() || !classId) return;
 
     if (planId) {
-      updatePlan(planId, { name: name.trim(), description: '' });
+      updatePlan(planId, { name: name.trim(), description: '', color });
     } else {
-      createPlan(name.trim(), '', classId);
+      createPlan(name.trim(), '', classId, color);
     }
     onClose();
   }
@@ -54,6 +65,30 @@ function EditPlanModal({
                 className="form-input"
                 required
               />
+            </div>
+            
+            <div>
+              <label className="form-label">
+                Color
+              </label>
+              <div className="grid grid-cols-4 gap-2 mt-2">
+                {COLOR_OPTIONS.map((colorOption) => (
+                  <button
+                    key={colorOption.value}
+                    type="button"
+                    onClick={() => setColor(colorOption.value)}
+                    className={`
+                      w-full h-10 rounded-md border-2 transition-all
+                      ${color === colorOption.value 
+                        ? 'border-gray-800 ring-2 ring-gray-300' 
+                        : 'border-gray-300 hover:border-gray-400'
+                      }
+                      ${colorOption.class}
+                    `}
+                    title={colorOption.name}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -160,6 +195,9 @@ export default function SeatingPlanSelector() {
                 value={currentPlan?.id || ''}
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
+                style={{
+                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
+                }}
               >
                 {plans.map((plan) => (
                   <option key={plan.id} value={plan.id}>
@@ -173,6 +211,9 @@ export default function SeatingPlanSelector() {
               disabled={!currentPlan}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
               title="Edit selected plan"
+              style={{
+                color: currentPlan?.color || undefined
+              }}
             >
               <Pencil className="h-4 w-4" />
             </button>
@@ -207,6 +248,9 @@ export default function SeatingPlanSelector() {
                   value={currentScoreSet?.id || ''}
                   onChange={(e) => switchScoreSet(e.target.value)}
                   className="form-input"
+                  style={{
+                    borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                  }}
                 >
                   {currentPlan && Object.entries(currentPlan.scoreSets).map(([id, scoreSet]) => (
                     <option key={id} value={id}>
@@ -220,6 +264,9 @@ export default function SeatingPlanSelector() {
                 disabled={!currentScoreSet}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
                 title="Rename selected score set"
+                style={{
+                  color: currentScoreSet?.color || undefined
+                }}
               >
                 <Pencil className="h-4 w-4" />
               </button>
@@ -246,21 +293,23 @@ export default function SeatingPlanSelector() {
         }}
         planId={editingPlan?.id}
         initialName={editingPlan?.name}
+        initialColor={editingPlan?.color}
       />
 
       <CreateScoreSetModal
         isOpen={isCreateScoreSetModalOpen}
         onClose={() => setIsCreateScoreSetModalOpen(false)}
-        onSave={createScoreSet}
+        onSave={(name, color) => createScoreSet(name, color)}
       />
 
       <RenameScoreSetModal
         isOpen={isRenameScoreSetModalOpen}
         onClose={() => setIsRenameScoreSetModalOpen(false)}
         currentName={currentScoreSet?.name || ''}
-        onSave={(newName) => {
+        currentColor={currentScoreSet?.color || '#3369e8'}
+        onSave={(newName, newColor) => {
           if (currentScoreSet) {
-            renameScoreSet(currentScoreSet.id, newName);
+            renameScoreSet(currentScoreSet.id, newName, newColor);
           }
           setIsRenameScoreSetModalOpen(false);
         }}
@@ -272,19 +321,21 @@ export default function SeatingPlanSelector() {
 interface CreateScoreSetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string) => void;
+  onSave: (name: string, color: string) => void;
 }
 
 function CreateScoreSetModal({ isOpen, onClose, onSave }: CreateScoreSetModalProps) {
   const [name, setName] = useState('');
+  const [color, setColor] = useState('#3369e8');
 
   if (!isOpen) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    onSave(name.trim());
+    onSave(name.trim(), color);
     setName('');
+    setColor('#3369e8');
     onClose();
   }
 
@@ -316,6 +367,30 @@ function CreateScoreSetModal({ isOpen, onClose, onSave }: CreateScoreSetModalPro
               required
             />
           </div>
+          
+          <div>
+            <label className="form-label">
+              Color
+            </label>
+            <div className="grid grid-cols-4 gap-2 mt-2">
+              {COLOR_OPTIONS.map((colorOption) => (
+                <button
+                  key={colorOption.value}
+                  type="button"
+                  onClick={() => setColor(colorOption.value)}
+                  className={`
+                    w-full h-10 rounded-md border-2 transition-all
+                    ${color === colorOption.value 
+                      ? 'border-gray-800 ring-2 ring-gray-300' 
+                      : 'border-gray-300 hover:border-gray-400'
+                    }
+                    ${colorOption.class}
+                  `}
+                  title={colorOption.name}
+                />
+              ))}
+            </div>
+          </div>
 
           <div className="flex justify-end gap-3">
             <button
@@ -342,18 +417,20 @@ interface RenameScoreSetModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentName: string;
-  onSave: (newName: string) => void;
+  currentColor: string;
+  onSave: (newName: string, newColor: string) => void;
 }
 
-function RenameScoreSetModal({ isOpen, onClose, currentName, onSave }: RenameScoreSetModalProps) {
+function RenameScoreSetModal({ isOpen, onClose, currentName, currentColor, onSave }: RenameScoreSetModalProps) {
   const [name, setName] = useState(currentName);
+  const [color, setColor] = useState(currentColor);
 
   if (!isOpen) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    onSave(name.trim());
+    onSave(name.trim(), color);
     onClose();
   }
 
@@ -383,6 +460,30 @@ function RenameScoreSetModal({ isOpen, onClose, currentName, onSave }: RenameSco
               className="form-input"
               required
             />
+          </div>
+          
+          <div>
+            <label className="form-label">
+              Color
+            </label>
+            <div className="grid grid-cols-4 gap-2 mt-2">
+              {COLOR_OPTIONS.map((colorOption) => (
+                <button
+                  key={colorOption.value}
+                  type="button"
+                  onClick={() => setColor(colorOption.value)}
+                  className={`
+                    w-full h-10 rounded-md border-2 transition-all
+                    ${color === colorOption.value 
+                      ? 'border-gray-800 ring-2 ring-gray-300' 
+                      : 'border-gray-300 hover:border-gray-400'
+                    }
+                    ${colorOption.class}
+                  `}
+                  title={colorOption.name}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3">

@@ -41,15 +41,15 @@ interface SeatingState {
   plans: SeatingPlan[];
   
   // Actions
-  createPlan: (name: string, description: string, classId: string) => void;
+  createPlan: (name: string, description: string, classId: string, color?: string) => void;
   copyPlan: (sourcePlanId: string, name: string, description: string, resetScores: boolean) => void;
   updatePlan: (planId: string, updates: Partial<Omit<SeatingPlan, 'id' | 'createdAt'>>) => void;
   deletePlan: (planId: string) => void;
   switchPlan: (planId: string | null) => void;
-  createScoreSet: (name: string) => void;
+  createScoreSet: (name: string, color?: string) => void;
   switchScoreSet: (scoreSetId: string | null) => void;
   deleteScoreSet: (scoreSetId: string) => void;
-  renameScoreSet: (scoreSetId: string, newName: string) => void;
+  renameScoreSet: (scoreSetId: string, newName: string, newColor?: string) => void;
   updateSeat: (studentId: string, row: number | null, col: number | null) => void;
   updateGridSettings: (settings: GridSettings) => void;
   resetSeating: () => void;
@@ -78,13 +78,13 @@ export const useSeatingStore = create<SeatingState>()(
       currentPlanId: null,
       plans: [],
 
-      createPlan: (name, description, classId) => {
+      createPlan: (name, description, classId, color = '#d50f25') => {
         const defaultScoreSetId = crypto.randomUUID();
         const newPlan: SeatingPlan = {
           id: crypto.randomUUID(),
           name,
           description,
-          color: '#d50f25', // Default red color
+          color,
           createdAt: new Date().toISOString(),
           modifiedAt: new Date().toISOString(),
           seats: [],
@@ -198,7 +198,7 @@ export const useSeatingStore = create<SeatingState>()(
         }
       },
 
-      createScoreSet: (name) => {
+      createScoreSet: (name, color = '#3369e8') => {
         const currentPlan = get().getCurrentPlan();
         if (!currentPlan) return;
 
@@ -207,7 +207,7 @@ export const useSeatingStore = create<SeatingState>()(
           name,
           scores: {},
           createdAt: new Date().toISOString(),
-          color: '#3369e8' // Default blue color
+          color
         };
 
         set(state => ({
@@ -272,7 +272,7 @@ export const useSeatingStore = create<SeatingState>()(
         }));
       },
 
-      renameScoreSet: (scoreSetId, newName) => {
+      renameScoreSet: (scoreSetId, newName, newColor) => {
         const currentPlan = get().getCurrentPlan();
         if (!currentPlan || !currentPlan.scoreSets[scoreSetId]) return;
 
@@ -285,7 +285,8 @@ export const useSeatingStore = create<SeatingState>()(
                     ...plan.scoreSets,
                     [scoreSetId]: {
                       ...plan.scoreSets[scoreSetId],
-                      name: newName
+                      name: newName,
+                      ...(newColor && { color: newColor })
                     }
                   },
                   modifiedAt: new Date().toISOString()
@@ -716,7 +717,8 @@ export const useSeatingStore = create<SeatingState>()(
         return {
           id: currentPlan.currentScoreSetId,
           name: scoreSet.name,
-          scores: scoreSet.scores
+          scores: scoreSet.scores,
+          color: scoreSet.color
         };
       },
       getUnassignedStudents: (classId) => {

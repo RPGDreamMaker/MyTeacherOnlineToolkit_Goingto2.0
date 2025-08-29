@@ -31,7 +31,6 @@ interface SeatingPlan {
   currentScoreSetId: string | null;
   selectedStudents?: string[];
   lockedSeats: Array<{ row: number; col: number }>;
-  absentStudents?: string[];
 }
 
 interface SeatingState {
@@ -54,8 +53,6 @@ interface SeatingState {
   resetSeating: () => void;
   toggleSeatLock: (row: number, col: number) => void;
   isSeatLocked: (row: number, col: number) => boolean;
-  toggleStudentAbsent: (studentId: string) => void;
-  isStudentAbsent: (studentId: string) => boolean;
   getStudent: (id: string, classId: string) => Student | undefined;
   initialize: (classId: string, students: Student[]) => void;
   updateStudentScore: (studentId: string, classId: string, delta: number) => void;
@@ -99,54 +96,6 @@ export const useSeatingStore = create<SeatingState>()(
           },
           currentScoreSetId: defaultScoreSetId,
           lockedSeats: []
-        };
-
-        set(state => ({
-          plans: [...state.plans, newPlan],
-          currentPlanId: newPlan.id
-        }));
-      },
-
-      copyPlan: (sourcePlanId, name, description, resetScores) => {
-        const sourcePlan = get().plans.find(p => p.id === sourcePlanId);
-        if (!sourcePlan) return;
-
-        const defaultScoreSetId = crypto.randomUUID();
-        let newScoreSets;
-        
-        if (resetScores) {
-          newScoreSets = {
-            [defaultScoreSetId]: {
-              name: 'Default Scores',
-              scores: {},
-              createdAt: new Date().toISOString()
-            }
-          };
-        } else {
-          // Copy all score sets
-          newScoreSets = Object.fromEntries(
-            Object.entries(sourcePlan.scoreSets).map(([_, scoreSet]) => {
-              const newId = crypto.randomUUID();
-              return [newId, {
-                ...scoreSet,
-                createdAt: new Date().toISOString()
-              }];
-            })
-          );
-        }
-        const newPlan: SeatingPlan = {
-          id: crypto.randomUUID(),
-          name,
-          description,
-          createdAt: new Date().toISOString(),
-          modifiedAt: new Date().toISOString(),
-          seats: [...sourcePlan.seats],
-          gridSettings: { ...sourcePlan.gridSettings },
-          classId: sourcePlan.classId,
-          scoreSets: newScoreSets,
-          currentScoreSetId: resetScores ? defaultScoreSetId : Object.keys(newScoreSets)[0],
-          lockedSeats: [...sourcePlan.lockedSeats],
-          absentStudents: [...(sourcePlan.absentStudents || [])]
         };
 
         set(state => ({
@@ -694,11 +643,6 @@ export const useSeatingStore = create<SeatingState>()(
         // Ensure lockedSeats is always an array for backward compatibility
         if (!plan.lockedSeats) {
           plan.lockedSeats = [];
-        }
-        
-        // Ensure absentStudents is always an array for backward compatibility
-        if (!plan.absentStudents) {
-          plan.absentStudents = [];
         }
         
         return plan;

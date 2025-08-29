@@ -198,15 +198,15 @@ export default function SeatingPlanSelector() {
                 className="form-input"
                 style={{
                   backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
-                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
+                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined,
+                  fontWeight: 'bold'
                 }}
               >
                 {plans.map((plan) => (
                   <option 
                     key={plan.id} 
                     style={{
-                      backgroundColor: plan.color ? `${plan.color}20` : undefined,
-                      fontWeight: 'bold'
+                      backgroundColor: plan.color ? `${plan.color}20` : undefined
                     }}
                     value={plan.id}
                   >

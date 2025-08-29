@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useSeatingStore } from '../store/seating';
-import { RotateCcw, Settings, Download, Copy, Wand2, ArrowLeft, Layout } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { RotateCcw, Settings, Download, Copy, Wand2, Layout } from 'lucide-react';
 import SeatingGrid from '../components/SeatingGrid';
 import UnassignedStudents from '../components/UnassignedStudents';
 import GridSettingsModal from '../components/GridSettingsModal';
@@ -145,16 +144,6 @@ export default function SeatingPlanPage({ classId, classData }: SeatingPlanPageP
     <div className="min-h-screen bg-gray-50">
       <main className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Dashboard
-            </Link>
-          </div>
-
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <Layout className="h-5 w-5 text-gray-600" />

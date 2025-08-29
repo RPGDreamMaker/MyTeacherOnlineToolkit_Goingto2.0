@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Users, Loader2, ArrowLeftRight, X } from 'lucide-react';
 import { useSeatingStore } from '../store/seating';
+import { useClassesStore } from '../store/classes';
 
 export default function SelectionButtons() {
   const [isLoading, setIsLoading] = useState(false);

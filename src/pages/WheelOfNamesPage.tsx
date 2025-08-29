@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useWheelStore } from '../store/wheel';
 import { useClassesStore } from '../store/classes';
-import { ArrowLeft } from 'lucide-react';
 import Wheel from '../components/Wheel';
 import WinnerModal from '../components/WinnerModal';
 import StudentList from '../components/StudentList';
 import SelectedStudents from '../components/SelectedStudents';
 import WheelPlanSelector from '../components/WheelPlanSelector';
+import { Class } from '../store/classes';
 
 interface Student {
   id: string;
@@ -15,12 +14,14 @@ interface Student {
   lastName: string;
 }
 
-export default function WheelOfNamesPage() {
-  const { classId } = useParams<{ classId: string }>();
-  const { classes } = useClassesStore();
+interface WheelOfNamesPageProps {
+  classId: string;
+  classData: Class;
+}
+
+export default function WheelOfNamesPage({ classId, classData }: WheelOfNamesPageProps) {
   const { isStudentAbsent, toggleStudentAbsent } = useClassesStore();
   const {
-    initialize,
     getAvailableStudents,
     getSelectedStudents,
     selectStudent,
@@ -32,15 +33,6 @@ export default function WheelOfNamesPage() {
   
   const [winner, setWinner] = useState<Student | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const classData = classId ? classes.find(c => c.id === classId) : null;
-
-  useEffect(() => {
-    if (classData) {
-      initialize(classData.id, classData.students);
-    }
-  }, [classData, initialize]);
-
-  if (!classId || !classData) return null;
 
   const availableStudents = getAvailableStudents(classId);
   const selectedStudents = getSelectedStudents(classId);
@@ -54,22 +46,10 @@ export default function WheelOfNamesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <main className="py-8">
-        <div className="max-w-[1600px] mx-auto px-4">
-          <div className="mb-8">
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Dashboard
-            </Link>
-          </div>
+    <div>
+      <WheelPlanSelector />
 
-          <WheelPlanSelector />
-
-          <div className="flex justify-center items-start gap-8">
+      <div className="flex justify-center items-start gap-8">
             <StudentList
               students={classData.students}
               absentees={new Set(classData.students.filter(s => isStudentAbsent(classId, s.id)).map(s => s.id))}
@@ -113,8 +93,6 @@ export default function WheelOfNamesPage() {
               disabled={isSpinning}
             />
           </div>
-        </div>
-      </main>
 
       <WinnerModal
         student={winner}

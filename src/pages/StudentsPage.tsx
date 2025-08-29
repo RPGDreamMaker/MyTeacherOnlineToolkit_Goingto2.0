@@ -1,33 +1,22 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
 import { useClassesStore } from '../store/classes';
-import { ArrowLeft, Plus, UserPlus, Pencil, Trash2, Upload, UserX } from 'lucide-react';
+import { Plus, UserPlus, Pencil, Trash2, Upload, UserX } from 'lucide-react';
 import CreateStudentModal from '../components/CreateStudentModal';
 import EditStudentModal from '../components/EditStudentModal';
 import ImportStudentsModal from '../components/ImportStudentsModal';
+import { Class } from '../store/classes';
 
-export default function StudentsPage() {
-  const { classId } = useParams<{ classId: string }>();
-  const { classes, addStudent, updateStudent, deleteStudent, importStudents } = useClassesStore();
+interface StudentsPageProps {
+  classId: string;
+  classData: Class;
+}
+
+export default function StudentsPage({ classId, classData }: StudentsPageProps) {
+  const { addStudent, updateStudent, deleteStudent, importStudents } = useClassesStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<{ id: string; firstName: string; lastName: string } | null>(null);
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
-
-  const classData = classes.find(c => c.id === classId);
-
-  if (!classData) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-red-600">Class not found</p>
-          <Link to="/dashboard" className="text-blue-600 hover:underline">
-            Return to Dashboard
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const sortedStudents = [...classData.students].sort((a, b) => 
     a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName)
@@ -44,31 +33,11 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Dashboard
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md">
+    <div>
+      <div className="bg-white rounded-lg shadow-md">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <div>
-                <h1 className="page-title">
-                  {classData.name}
-                </h1>
-                {classData.description && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    {classData.description}
-                  </p>
-                )}
-              </div>
+              <h2 className="section-heading">Students</h2>
               <div className="flex gap-2">
                 <button
                   onClick={() => setIsImportModalOpen(true)}
@@ -171,8 +140,8 @@ export default function StudentsPage() {
             )}
           </div>
         </div>
-
-        <CreateStudentModal
+      
+      <CreateStudentModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
           onSave={(student) => {
@@ -226,7 +195,6 @@ export default function StudentsPage() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

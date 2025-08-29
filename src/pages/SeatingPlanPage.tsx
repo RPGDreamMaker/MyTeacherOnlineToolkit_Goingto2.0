@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useSeatingStore } from '../store/seating';
-import { useClassesStore } from '../store/classes';
-import { Layout, RotateCcw, Settings, ArrowLeft, Download, Copy, Wand2 } from 'lucide-react';
+import { RotateCcw, Settings, Download, Copy, Wand2 } from 'lucide-react';
 import SeatingGrid from '../components/SeatingGrid';
 import UnassignedStudents from '../components/UnassignedStudents';
 import GridSettingsModal from '../components/GridSettingsModal';
@@ -12,12 +10,17 @@ import CopySeatingModal from '../components/CopySeatingModal';
 import SelectionButtons from '../components/SelectionButtons';
 import PointsManipulation from '../components/PointsManipulation';
 import AutomaticSeatingModal from '../components/AutomaticSeatingModal';
+import { Class } from '../store/classes';
+import { useClassesStore } from '../store/classes';
 
-export default function SeatingPlanPage() {
-  const { classId } = useParams<{ classId: string }>();
-  const { classes } = useClassesStore();
+interface SeatingPlanPageProps {
+  classId: string;
+  classData: Class;
+}
+
+export default function SeatingPlanPage({ classId, classData }: SeatingPlanPageProps) {
+  const { isStudentAbsent } = useClassesStore();
   const { 
-    initialize, 
     resetSeating, 
     getCurrentPlan, 
     updateGridSettings,
@@ -30,23 +33,8 @@ export default function SeatingPlanPage() {
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [isAutomaticSeatingOpen, setIsAutomaticSeatingOpen] = useState(false);
 
-  const classData = classId ? classes.find(c => c.id === classId) : null;
   const currentPlan = getCurrentPlan();
   const availablePlans = classId ? getPlansForClass(classId) : [];
-
-  // Calculate available seats for automatic seating
-  const availableSeats = currentPlan 
-    ? (currentPlan.gridSettings.rows * currentPlan.gridSettings.cols) - currentPlan.lockedSeats.length
-    : 0;
-  const totalStudents = classData?.students.length || 0;
-  useEffect(() => {
-    if (classData) {
-      initialize(classData.id, classData.students);
-    }
-  }, [classData, initialize]);
-
-  function exportScores() {
-    if (!currentPlan || !classId || !classData) return;
 
     const { getCurrentScoreSet } = useSeatingStore.getState();
     const currentScoreSet = getCurrentScoreSet();
@@ -134,96 +122,60 @@ export default function SeatingPlanPage() {
     });
   }
 
-  if (!classData) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <main className="py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center text-red-600">
-              Invalid class ID
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <Link
-              to="/dashboard"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Dashboard
-            </Link>
-          </div>
-
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-2">
-              <Layout className="h-5 w-5 text-gray-600" />
-              <h2 className="page-title">
-                Seating Plan - {classData.name}
-              </h2>
-            </div>
-            {currentPlan && (
-              <div className="flex gap-2">
-                <button
-                  onClick={exportScores}
-                  className="flex items-center gap-2 btn-secondary"
-                >
-                  <Download className="h-4 w-4" />
-                  Export Scores
-                </button>
-                <button
-                  onClick={() => setIsSettingsOpen(true)}
-                  className="flex items-center gap-2 btn-secondary"
-                >
-                  <Settings className="h-4 w-4" />
-                  Grid Settings
-                </button>
-                <button
-                  onClick={() => setIsAutomaticSeatingOpen(true)}
-                  className="flex items-center gap-2 btn-secondary"
-                >
-                  <Wand2 className="h-4 w-4" />
-                  Automatic Seating
-                </button>
-                <button
-                  onClick={() => setIsCopyModalOpen(true)}
-                  className="flex items-center gap-2 btn-secondary"
-                >
-                  <Copy className="h-4 w-4" />
-                  Copy Seating
-                </button>
-                <button
-                  onClick={resetSeating}
-                  className="flex items-center gap-2 btn-secondary"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Reset Seating
-                </button>
-              </div>
-            )}
-          </div>
-
-          <SeatingPlanSelector />
-          
-          {currentPlan && <ScoreSetSelector />}
-          
-          {currentPlan && <PointsManipulation />}
-          
-          {currentPlan && <SelectionButtons />}
-
-          <div className="space-y-6">
-            <SeatingGrid />
-            {currentPlan && <UnassignedStudents />}
-          </div>
+    <div>
+      {currentPlan && (
+        <div className="flex justify-end gap-2 mb-6">
+          <button
+            onClick={exportScores}
+            className="flex items-center gap-2 btn-secondary"
+          >
+            <Download className="h-4 w-4" />
+            Export Scores
+          </button>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-2 btn-secondary"
+          >
+            <Settings className="h-4 w-4" />
+            Grid Settings
+          </button>
+          <button
+            onClick={() => setIsAutomaticSeatingOpen(true)}
+            className="flex items-center gap-2 btn-secondary"
+          >
+            <Wand2 className="h-4 w-4" />
+            Automatic Seating
+          </button>
+          <button
+            onClick={() => setIsCopyModalOpen(true)}
+            className="flex items-center gap-2 btn-secondary"
+          >
+            <Copy className="h-4 w-4" />
+            Copy Seating
+          </button>
+          <button
+            onClick={resetSeating}
+            className="flex items-center gap-2 btn-secondary"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset Seating
+          </button>
         </div>
-      </main>
+      )}
+
+      <SeatingPlanSelector />
+          
+      {currentPlan && <ScoreSetSelector />}
+          
+      {currentPlan && <PointsManipulation />}
+          
+      {currentPlan && <SelectionButtons />}
+
+      <div className="space-y-6">
+        <SeatingGrid />
+        {currentPlan && <UnassignedStudents />}
+      </div>
 
       {currentPlan && (
         <>

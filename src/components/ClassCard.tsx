@@ -87,22 +87,10 @@ export default function ClassCard({
       </div>
 
       <div className="grid grid-cols-1 gap-2">
-        <Link to={`/class/${classData.id}/students`}>
+        <Link to={`/class/${classData.id}`}>
           <button className="w-full flex items-center justify-center gap-2 btn-secondary">
             <Users className="h-4 w-4" />
-            <span>Manage Students</span>
-          </button>
-        </Link>
-        <Link to={`/class/${classData.id}/seating`}>
-          <button className="w-full flex items-center justify-center gap-2 btn-secondary">
-            <Layout className="h-4 w-4" />
-            <span>Seating Plan</span>
-          </button>
-        </Link>
-        <Link to={`/class/${classData.id}/wheel`}>
-          <button className="w-full flex items-center justify-center gap-2 btn-secondary">
-            <CircleDot className="h-4 w-4" />
-            <span>Wheel of Names</span>
+            <span>Open Class Tools</span>
           </button>
         </Link>
       </div>

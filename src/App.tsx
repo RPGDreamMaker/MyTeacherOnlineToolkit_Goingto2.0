@@ -1,9 +1,7 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import StudentsPage from './pages/StudentsPage';
-import SeatingPlanPage from './pages/SeatingPlanPage';
-import WheelOfNamesPage from './pages/WheelOfNamesPage';
+import ClassDetailsPage from './pages/ClassDetailsPage';
 import LearningWheelPage from './pages/LearningWheelPage';
 import WordSearchCreatorPage from './pages/WordSearchCreatorPage';
 import { AuthProvider } from './context/AuthContext';
@@ -24,26 +22,10 @@ function App() {
             }
           />
           <Route
-            path="/class/:classId/students"
+            path="/class/:classId"
             element={
               <PrivateRoute>
-                <StudentsPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/class/:classId/seating"
-            element={
-              <PrivateRoute>
-                <SeatingPlanPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/class/:classId/wheel"
-            element={
-              <PrivateRoute>
-                <WheelOfNamesPage />
+                <ClassDetailsPage />
               </PrivateRoute>
             }
           />

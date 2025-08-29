@@ -84,6 +84,7 @@ export default function StudentCard({
           </button>
         </div>
       </div>
+      </div>
       
       {showTooltip && (
         <div className="absolute z-50 px-2 py-1 text-sm text-white bg-gray-800 rounded shadow-lg whitespace-nowrap -top-8 left-1/2 transform -translate-x-1/2">

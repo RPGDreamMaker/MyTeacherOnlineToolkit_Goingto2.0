@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useClassesStore } from './classes';
 
 interface Student {
   id: string;
@@ -479,8 +480,6 @@ export const useSeatingStore = create<SeatingState>()(
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet || currentPlan.classId !== classId) return;
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
         
         // Don't update scores for absent students

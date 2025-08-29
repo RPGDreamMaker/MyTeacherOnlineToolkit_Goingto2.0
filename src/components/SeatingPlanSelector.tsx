@@ -204,6 +204,9 @@ export default function SeatingPlanSelector() {
                 {plans.map((plan) => (
                   <option 
                     key={plan.id} 
+                    style={{
+                      backgroundColor: scoreSet.color ? `${scoreSet.color}20` : undefined
+                    }}
                     value={plan.id}
                   >
                     {plan.name}

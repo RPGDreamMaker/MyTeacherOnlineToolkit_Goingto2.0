@@ -637,7 +637,15 @@ export const useSeatingStore = create<SeatingState>()(
       getCurrentPlan: () => {
         const state = get();
         if (!state.currentPlanId) return null;
-        return state.plans.find(p => p.id === state.currentPlanId) ?? null;
+        const plan = state.plans.find(p => p.id === state.currentPlanId) ?? null;
+        if (!plan) return null;
+        
+        // Ensure lockedSeats is always an array for backward compatibility
+        if (!plan.lockedSeats) {
+          plan.lockedSeats = [];
+        }
+        
+        return plan;
       },
 
       getCurrentScoreSet: () => {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useClassesStore } from './classes';
 
 interface Student {
   id: string;
@@ -247,8 +248,6 @@ export const useWheelStore = create<WheelState>()(
         const currentPlan = state.getCurrentPlan();
         if (!currentPlan) return [];
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         const classStudents = state.students[classId] || [];

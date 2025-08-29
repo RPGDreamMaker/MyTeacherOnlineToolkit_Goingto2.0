@@ -197,8 +197,8 @@ export default function SeatingPlanSelector() {
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
                 style={{
-                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
-                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                  backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
+                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
                 }}
               >
                 {plans.map((plan) => (
@@ -259,7 +259,13 @@ export default function SeatingPlanSelector() {
                   }}
                 >
                   {currentPlan && Object.entries(currentPlan.scoreSets).map(([id, scoreSet]) => (
-                    <option key={id} value={id}>
+                    <option 
+                      key={id} 
+                      value={id}
+                      style={{
+                        backgroundColor: scoreSet.color ? `${scoreSet.color}20` : undefined
+                      }}
+                    >
                       {scoreSet.name}
                     </option>
                   ))}

@@ -618,18 +618,10 @@ export const useSeatingStore = create<SeatingState>()(
         }));
 
         const eligibleStudents = seatedStudents.filter(student => 
-        let eligibleStudents;
-        if (targetScore === '20+') {
-          eligibleStudents = seatedStudents.filter(student => 
-            student.score > 20 && 
-            !isStudentAbsent(currentPlan.classId, student.studentId)
-          );
-        } else {
-          eligibleStudents = seatedStudents.filter(student => 
-            student.score === targetScore && 
-            !isStudentAbsent(currentPlan.classId, student.studentId)
-          );
-        }
+          student.score >= minScore && 
+          student.score <= maxScore && 
+          !isStudentAbsent(currentPlan.classId, student.studentId)
+        );
 
         const selectedStudents: string[] = [];
         const availableStudents = [...eligibleStudents];

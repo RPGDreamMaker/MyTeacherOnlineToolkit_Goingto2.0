@@ -5,12 +5,16 @@ interface AutomaticSeatingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApply: (options: { alphabetical: boolean; random: boolean }) => void;
+  availableSeats: number;
+  totalStudents: number;
 }
 
 export default function AutomaticSeatingModal({
   isOpen,
   onClose,
   onApply,
+  availableSeats,
+  totalStudents,
 }: AutomaticSeatingModalProps) {
   const [alphabetical, setAlphabetical] = useState(false);
   const [random, setRandom] = useState(false);
@@ -38,6 +42,15 @@ export default function AutomaticSeatingModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {totalStudents > availableSeats && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+              <p className="text-sm text-yellow-800">
+                <strong>Warning:</strong> You have {totalStudents} students but only {availableSeats} available seats. 
+                Some students will remain unassigned.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <div className="flex items-center">
               <input

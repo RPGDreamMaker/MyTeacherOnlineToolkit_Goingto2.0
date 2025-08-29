@@ -34,6 +34,11 @@ export default function SeatingPlanPage() {
   const currentPlan = getCurrentPlan();
   const availablePlans = classId ? getPlansForClass(classId) : [];
 
+  // Calculate available seats for automatic seating
+  const availableSeats = currentPlan 
+    ? (currentPlan.gridSettings.rows * currentPlan.gridSettings.cols) - currentPlan.lockedSeats.length
+    : 0;
+  const totalStudents = classData?.students.length || 0;
   useEffect(() => {
     if (classData) {
       initialize(classData.id, classData.students);
@@ -85,6 +90,18 @@ export default function SeatingPlanPage() {
   function handleAutomaticSeating({ alphabetical, random }: { alphabetical: boolean; random: boolean }) {
     if (!currentPlan || !classData) return;
 
+    // Get available seats (not locked and not occupied)
+    const totalSeats = currentPlan.gridSettings.rows * currentPlan.gridSettings.cols;
+    const lockedSeats = new Set(currentPlan.lockedSeats.map(seat => `${seat.row}-${seat.col}`));
+    const availablePositions: Array<{ row: number; col: number }> = [];
+    
+    for (let row = 0; row < currentPlan.gridSettings.rows; row++) {
+      for (let col = 0; col < currentPlan.gridSettings.cols; col++) {
+        if (!lockedSeats.has(`${row}-${col}`)) {
+          availablePositions.push({ row, col });
+        }
+      }
+    }
     // Clear current seating
     currentPlan.seats.forEach(seat => {
       updateSeat(seat.studentId, null, null);
@@ -108,13 +125,11 @@ export default function SeatingPlanPage() {
       }
     }
 
-    // Place students in grid
+    // Place students in available positions only
     studentsToPlace.forEach((student, index) => {
-      const row = Math.floor(index / currentPlan.gridSettings.cols);
-      const col = index % currentPlan.gridSettings.cols;
-      
-      if (row < currentPlan.gridSettings.rows) {
-        updateSeat(student.id, row, col);
+      if (index < availablePositions.length) {
+        const position = availablePositions[index];
+        updateSeat(student.id, position.row, position.col);
       }
     });
   }
@@ -229,6 +244,8 @@ export default function SeatingPlanPage() {
             isOpen={isAutomaticSeatingOpen}
             onClose={() => setIsAutomaticSeatingOpen(false)}
             onApply={handleAutomaticSeating}
+            availableSeats={availableSeats}
+            totalStudents={totalStudents}
           />
         </>
       )}

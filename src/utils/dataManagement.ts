@@ -72,6 +72,11 @@ export async function importAppData(file: File): Promise<void> {
 
     // Migrate old seating plans to new score sets format
     const migratedSeatingPlans = (appData.seatingPlans || []).map((plan: any) => {
+      // Add lockedSeats if it doesn't exist
+      if (!plan.lockedSeats) {
+        plan.lockedSeats = [];
+      }
+      
       if (plan.scores && !plan.scoreSets) {
         // Old format - migrate to new format
         const defaultScoreSetId = crypto.randomUUID();

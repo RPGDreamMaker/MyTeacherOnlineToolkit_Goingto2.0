@@ -30,6 +30,7 @@ interface SeatingPlan {
   scoreSets: Record<string, { name: string; scores: Record<string, number>; createdAt: string }>;
   currentScoreSetId: string | null;
   selectedStudents?: string[];
+  lockedSeats: Array<{ row: number; col: number }>;
 }
 
 interface SeatingState {
@@ -50,6 +51,8 @@ interface SeatingState {
   updateSeat: (studentId: string, row: number | null, col: number | null) => void;
   updateGridSettings: (settings: GridSettings) => void;
   resetSeating: () => void;
+  toggleSeatLock: (row: number, col: number) => void;
+  isSeatLocked: (row: number, col: number) => boolean;
   getStudent: (id: string, classId: string) => Student | undefined;
   initialize: (classId: string, students: Student[]) => void;
   updateStudentScore: (studentId: string, classId: string, delta: number) => void;
@@ -91,7 +94,8 @@ export const useSeatingStore = create<SeatingState>()(
               createdAt: new Date().toISOString()
             }
           },
-          currentScoreSetId: defaultScoreSetId
+          currentScoreSetId: defaultScoreSetId,
+          lockedSeats: []
         };
 
         set(state => ({
@@ -137,7 +141,8 @@ export const useSeatingStore = create<SeatingState>()(
           gridSettings: { ...sourcePlan.gridSettings },
           classId: sourcePlan.classId,
           scoreSets: newScoreSets,
-          currentScoreSetId: resetScores ? defaultScoreSetId : Object.keys(newScoreSets)[0]
+          currentScoreSetId: resetScores ? defaultScoreSetId : Object.keys(newScoreSets)[0],
+          lockedSeats: [...sourcePlan.lockedSeats]
         };
 
         set(state => ({
@@ -297,6 +302,9 @@ export const useSeatingStore = create<SeatingState>()(
           seat => seat.row < settings.rows && seat.col < settings.cols
         );
 
+        const validLockedSeats = currentPlan.lockedSeats.filter(
+          lockedSeat => lockedSeat.row < settings.rows && lockedSeat.col < settings.cols
+        );
         set(state => ({
           plans: state.plans.map(plan =>
             plan.id === currentPlan.id
@@ -304,6 +312,7 @@ export const useSeatingStore = create<SeatingState>()(
                   ...plan,
                   seats: validSeats,
                   gridSettings: settings,
+                  lockedSeats: validLockedSeats,
                   modifiedAt: new Date().toISOString()
                 }
               : plan
@@ -371,6 +380,44 @@ export const useSeatingStore = create<SeatingState>()(
               : plan
           )
         }));
+      },
+
+      toggleSeatLock: (row, col) => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan) return;
+
+        // Check if there's already a student in this seat
+        const isOccupied = currentPlan.seats.some(s => s.row === row && s.col === col);
+        if (isOccupied) return; // Can't lock occupied seats
+
+        const isLocked = currentPlan.lockedSeats.some(s => s.row === row && s.col === col);
+        
+        let newLockedSeats;
+        if (isLocked) {
+          // Unlock the seat
+          newLockedSeats = currentPlan.lockedSeats.filter(s => !(s.row === row && s.col === col));
+        } else {
+          // Lock the seat
+          newLockedSeats = [...currentPlan.lockedSeats, { row, col }];
+        }
+
+        set(state => ({
+          plans: state.plans.map(plan =>
+            plan.id === currentPlan.id
+              ? {
+                  ...plan,
+                  lockedSeats: newLockedSeats,
+                  modifiedAt: new Date().toISOString()
+                }
+              : plan
+          )
+        }));
+      },
+
+      isSeatLocked: (row, col) => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan) return false;
+        return currentPlan.lockedSeats.some(s => s.row === row && s.col === col);
       },
 
       clearSelectedStudents: () => {

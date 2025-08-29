@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useSeatingStore } from '../store/seating';
 import { Plus, Minus } from 'lucide-react';
+import { useState } from 'react';
 
 interface StudentCardProps {
   studentId: string;
@@ -15,6 +16,8 @@ export default function StudentCard({
 }: StudentCardProps) {
   const { classId } = useParams<{ classId: string }>();
   const { getStudent, updateStudentScore, getCurrentPlan, getCurrentScoreSet } = useSeatingStore();
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipTimeout, setTooltipTimeout] = useState<number | null>(null);
   
   if (!classId) return null;
   
@@ -31,8 +34,27 @@ export default function StudentCard({
     }
   };
 
+  const handleMouseEnter = () => {
+    const timeout = window.setTimeout(() => {
+      setShowTooltip(true);
+    }, 1000); // Show tooltip after 1 second
+    setTooltipTimeout(timeout);
+  };
+
+  const handleMouseLeave = () => {
+    if (tooltipTimeout) {
+      clearTimeout(tooltipTimeout);
+      setTooltipTimeout(null);
+    }
+    setShowTooltip(false);
+  };
   return (
     <div
+      className="relative h-full"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
       draggable={isDraggable}
       onDragStart={(e) => {
         e.dataTransfer.setData('text/plain', studentId);
@@ -62,6 +84,13 @@ export default function StudentCard({
           </button>
         </div>
       </div>
+      
+      {showTooltip && (
+        <div className="absolute z-50 px-2 py-1 text-sm text-white bg-gray-800 rounded shadow-lg whitespace-nowrap -top-8 left-1/2 transform -translate-x-1/2">
+          {student.firstName} {student.lastName}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+        </div>
+      )}
     </div>
   );
 }

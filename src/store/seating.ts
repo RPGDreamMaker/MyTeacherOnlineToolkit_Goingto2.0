@@ -700,8 +700,6 @@ export const useSeatingStore = create<SeatingState>()(
 
         const assignedStudentIds = new Set(currentPlan.seats.map(s => s.studentId));
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
         
         return classStudents.filter(student => 

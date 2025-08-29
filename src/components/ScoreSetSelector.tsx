@@ -150,7 +150,6 @@ export default function ScoreSetSelector() {
   } = useSeatingStore();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
-  const [renamingScoreSetId, setRenamingScoreSetId] = useState<string | null>(null);
 
   const currentPlan = getCurrentPlan();
   const currentScoreSet = getCurrentScoreSet();
@@ -162,25 +161,23 @@ export default function ScoreSetSelector() {
     ...scoreSet
   }));
 
-  function handleRename(scoreSetId: string, currentName: string) {
-    setRenamingScoreSetId(scoreSetId);
+  function handleRename() {
+    if (!currentScoreSet) return;
     setIsRenameModalOpen(true);
   }
 
-  function handleDelete(scoreSetId: string) {
+  function handleDelete() {
+    if (!currentScoreSet) return;
+    
     if (scoreSets.length <= 1) {
       alert('Cannot delete the last score set');
       return;
     }
     
     if (confirm('Are you sure you want to delete this score set? All scores will be lost.')) {
-      deleteScoreSet(scoreSetId);
+      deleteScoreSet(currentScoreSet.id);
     }
   }
-
-  const renamingScoreSet = renamingScoreSetId 
-    ? scoreSets.find(s => s.id === renamingScoreSetId)
-    : null;
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
@@ -195,52 +192,38 @@ export default function ScoreSetSelector() {
         </button>
       </div>
 
-      <div className="space-y-2">
-        {scoreSets.map((scoreSet) => (
-          <div
-            key={scoreSet.id}
-            className={`
-              flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer
-              ${scoreSet.id === currentScoreSet?.id
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-200 hover:border-gray-300'
-              }
-              transition-colors
-            `}
-            onClick={() => switchScoreSet(scoreSet.id)}
+      <div className="flex items-center gap-3">
+        <div className="flex-1">
+          <select
+            value={currentScoreSet?.id || ''}
+            onChange={(e) => switchScoreSet(e.target.value)}
+            className="form-input"
           >
-            <div>
-              <h3 className="font-medium text-gray-900">{scoreSet.name}</h3>
-              <p className="text-xs text-gray-400 mt-1">
-                Created: {new Date(scoreSet.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRename(scoreSet.id, scoreSet.name);
-                }}
-                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                title="Rename score set"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-              {scoreSets.length > 1 && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(scoreSet.id);
-                  }}
-                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                  title="Delete score set"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+            {scoreSets.map((scoreSet) => (
+              <option key={scoreSet.id} value={scoreSet.id}>
+                {scoreSet.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          onClick={handleRename}
+          disabled={!currentScoreSet}
+          className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+          title="Rename selected score set"
+        >
+          <Pencil className="h-4 w-4" />
+        </button>
+        {scoreSets.length > 1 && (
+          <button
+            onClick={handleDelete}
+            disabled={!currentScoreSet}
+            className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Delete selected score set"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
       <CreateScoreSetModal
@@ -253,15 +236,13 @@ export default function ScoreSetSelector() {
         isOpen={isRenameModalOpen}
         onClose={() => {
           setIsRenameModalOpen(false);
-          setRenamingScoreSetId(null);
         }}
-        currentName={renamingScoreSet?.name || ''}
+        currentName={currentScoreSet?.name || ''}
         onSave={(newName) => {
-          if (renamingScoreSetId) {
-            renameScoreSet(renamingScoreSetId, newName);
+          if (currentScoreSet) {
+            renameScoreSet(currentScoreSet.id, newName);
           }
           setIsRenameModalOpen(false);
-          setRenamingScoreSetId(null);
         }}
       />
     </div>

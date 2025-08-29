@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSeatingStore } from '../store/seating';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X } from 'lucide-react';
 
 interface EditPlanModalProps {
   isOpen: boolean;
@@ -95,7 +95,7 @@ function EditPlanModal({
 
 export default function SeatingPlanSelector() {
   const { classId } = useParams<{ classId: string }>();
-  const { getPlansForClass, currentPlanId, switchPlan, deletePlan } = useSeatingStore();
+  const { getPlansForClass, getCurrentPlan, switchPlan, deletePlan } = useSeatingStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<{
     id: string;
@@ -104,12 +104,19 @@ export default function SeatingPlanSelector() {
   } | null>(null);
 
   const plans = classId ? getPlansForClass(classId) : [];
+  const currentPlan = getCurrentPlan();
 
   function handleEdit(plan: { id: string; name: string; description: string }) {
     setEditingPlan(plan);
     setIsEditModalOpen(true);
   }
 
+  function handleDelete() {
+    if (!currentPlan) return;
+    if (confirm('Are you sure you want to delete this seating plan?')) {
+      deletePlan(currentPlan.id);
+    }
+  }
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
@@ -123,60 +130,43 @@ export default function SeatingPlanSelector() {
         </button>
       </div>
 
-      <div className="space-y-2">
-        {plans.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">
-            No seating plans yet. Create your first plan to get started.
-          </p>
-        ) : (
-          plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`
-                flex items-center justify-between p-3 rounded-lg border-2
-                ${plan.id === currentPlanId
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-                }
-                transition-colors cursor-pointer
-              `}
-              onClick={() => switchPlan(plan.id)}
+      {plans.length === 0 ? (
+        <p className="text-gray-500 text-center py-4">
+          No seating plans yet. Create your first plan to get started.
+        </p>
+      ) : (
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <select
+              value={currentPlan?.id || ''}
+              onChange={(e) => switchPlan(e.target.value)}
+              className="form-input"
             >
-              <div>
-                <h3 className="font-medium text-gray-900">{plan.name}</h3>
-                {plan.description && (
-                  <p className="text-sm text-gray-500">{plan.description}</p>
-                )}
-                <p className="text-xs text-gray-400 mt-1">
-                  Last modified: {new Date(plan.modifiedAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEdit(plan);
-                  }}
-                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm('Are you sure you want to delete this seating plan?')) {
-                      deletePlan(plan.id);
-                    }
-                  }}
-                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+              {plans.map((plan) => (
+                <option key={plan.id} value={plan.id}>
+                  {plan.name} {plan.description ? `- ${plan.description}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={() => currentPlan && handleEdit(currentPlan)}
+            disabled={!currentPlan}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+            title="Edit selected plan"
+          >
+            <Pencil className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={!currentPlan}
+            className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Delete selected plan"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       <EditPlanModal
         isOpen={isEditModalOpen}

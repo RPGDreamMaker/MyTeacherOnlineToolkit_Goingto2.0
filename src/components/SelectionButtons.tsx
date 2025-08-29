@@ -4,8 +4,28 @@ import { useSeatingStore } from '../store/seating';
 
 export default function SelectionButtons() {
   const [isLoading, setIsLoading] = useState(false);
-  const { getCurrentPlan, getRandomStudents, getRandomStudentsFromSides, clearSelectedStudents, selectStudentsByScore } = useSeatingStore();
+  const { getCurrentPlan, getCurrentScoreSet, getRandomStudents, getRandomStudentsFromSides, clearSelectedStudents, selectStudentsByScore } = useSeatingStore();
   const currentPlan = getCurrentPlan();
+  const currentScoreSet = getCurrentScoreSet();
+
+  // Function to check if any students have a specific score
+  function hasStudentsWithScore(targetScore: number | string): boolean {
+    if (!currentPlan || !currentScoreSet) return false;
+    
+    const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
+    
+    return currentPlan.seats.some(seat => {
+      if (isStudentAbsent(currentPlan.classId, seat.studentId)) return false;
+      
+      const score = currentScoreSet.scores[seat.studentId] || 0;
+      
+      if (targetScore === '20+') {
+        return score > 20;
+      } else {
+        return score === targetScore;
+      }
+    });
+  }
 
   if (!currentPlan) return null;
 
@@ -122,7 +142,11 @@ export default function SelectionButtons() {
                 key={i}
                 onClick={() => handleScoreSelection(i)}
                 disabled={isLoading}
-                className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+                className={`px-2 py-1 text-xs font-medium rounded border transition-colors disabled:opacity-50 ${
+                  hasStudentsWithScore(i)
+                    ? 'border-yellow-400 bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                    : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+                }`}
               >
                 {i}
               </button>
@@ -134,7 +158,11 @@ export default function SelectionButtons() {
                 key={i + 11}
                 onClick={() => handleScoreSelection(i + 11)}
                 disabled={isLoading}
-                className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+                className={`px-2 py-1 text-xs font-medium rounded border transition-colors disabled:opacity-50 ${
+                  hasStudentsWithScore(i + 11)
+                    ? 'border-yellow-400 bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                    : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+                }`}
               >
                 {i + 11}
               </button>
@@ -142,14 +170,18 @@ export default function SelectionButtons() {
             <button
               onClick={() => handleScoreSelection('20+')}
               disabled={isLoading}
-              className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+              className={`px-2 py-1 text-xs font-medium rounded border transition-colors disabled:opacity-50 ${
+                hasStudentsWithScore('20+')
+                  ? 'border-yellow-400 bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                  : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+              }`}
             >
               20+
             </button>
           </div>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Click a number to highlight all students with that exact score, or "20+" for students with more than 20 points
+          Click a number to highlight all students with that exact score, or "20+" for students with more than 20 points. Yellow buttons indicate scores that exist in the current seating plan.
         </p>
       </div>
     </div>

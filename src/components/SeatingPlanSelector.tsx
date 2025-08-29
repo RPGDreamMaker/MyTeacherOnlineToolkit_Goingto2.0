@@ -133,13 +133,14 @@ export default function SeatingPlanSelector() {
     id: string;
     name: string;
     description: string;
+    color?: string;
   } | null>(null);
 
   const plans = classId ? getPlansForClass(classId) : [];
   const currentPlan = getCurrentPlan();
   const currentScoreSet = getCurrentScoreSet();
 
-  function handleEdit(plan: { id: string; name: string; description: string }) {
+  function handleEdit(plan: { id: string; name: string; description: string; color?: string }) {
     setEditingPlan(plan);
     setIsEditModalOpen(true);
   }
@@ -196,8 +197,8 @@ export default function SeatingPlanSelector() {
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
                 style={{
-                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
-                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                  backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
+                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
                 }}
               >
                 {plans.map((plan) => (
@@ -260,9 +261,8 @@ export default function SeatingPlanSelector() {
                     backgroundColor: currentScoreSet?.color || '#3369e8',
                     color: 'white',
                     fontWeight: 'bold'
-                    color: 'white',
-                        backgroundColor: plan.color || '#d50f25',
-                        color: 'white'
+                  }}
+                >
                   {currentPlan && Object.entries(currentPlan.scoreSets).map(([id, scoreSet]) => (
                     <option 
                       key={id} 
@@ -291,6 +291,8 @@ export default function SeatingPlanSelector() {
               {currentPlan && Object.keys(currentPlan.scoreSets).length > 1 && (
                 <button
                   onClick={handleDeleteScoreSet}
+                  className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                  title="Delete selected score set"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

@@ -95,8 +95,20 @@ function EditPlanModal({
 
 export default function SeatingPlanSelector() {
   const { classId } = useParams<{ classId: string }>();
-  const { getPlansForClass, getCurrentPlan, switchPlan, deletePlan } = useSeatingStore();
+  const { 
+    getPlansForClass, 
+    getCurrentPlan, 
+    switchPlan, 
+    deletePlan,
+    getCurrentScoreSet,
+    createScoreSet,
+    switchScoreSet,
+    deleteScoreSet,
+    renameScoreSet
+  } = useSeatingStore();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCreateScoreSetModalOpen, setIsCreateScoreSetModalOpen] = useState(false);
+  const [isRenameScoreSetModalOpen, setIsRenameScoreSetModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<{
     id: string;
     name: string;
@@ -105,6 +117,7 @@ export default function SeatingPlanSelector() {
 
   const plans = classId ? getPlansForClass(classId) : [];
   const currentPlan = getCurrentPlan();
+  const currentScoreSet = getCurrentScoreSet();
 
   function handleEdit(plan: { id: string; name: string; description: string }) {
     setEditingPlan(plan);
@@ -117,56 +130,128 @@ export default function SeatingPlanSelector() {
       deletePlan(currentPlan.id);
     }
   }
-  return (
-    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="section-heading">Seating Plans</h2>
-        <button
-          onClick={() => setIsEditModalOpen(true)}
-          className="flex items-center gap-2 btn-primary"
-        >
-          <Plus className="h-4 w-4" />
-          New Plan
-        </button>
-      </div>
 
-      {plans.length === 0 ? (
-        <p className="text-gray-500 text-center py-4">
-          No seating plans yet. Create your first plan to get started.
-        </p>
-      ) : (
-        <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <select
-              value={currentPlan?.id || ''}
-              onChange={(e) => switchPlan(e.target.value)}
-              className="form-input"
-            >
-              {plans.map((plan) => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.name} {plan.description ? `- ${plan.description}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+  function handleRenameScoreSet() {
+    if (!currentScoreSet) return;
+    setIsRenameScoreSetModalOpen(true);
+  }
+
+  function handleDeleteScoreSet() {
+    if (!currentScoreSet) return;
+    
+    const scoreSets = currentPlan ? Object.entries(currentPlan.scoreSets) : [];
+    if (scoreSets.length <= 1) {
+      alert('Cannot delete the last score set');
+      return;
+    }
+    
+    if (confirm('Are you sure you want to delete this score set? All scores will be lost.')) {
+      deleteScoreSet(currentScoreSet.id);
+    }
+  }
+
+  return (
+    <>
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="section-heading">Seating Plans</h2>
           <button
-            onClick={() => currentPlan && handleEdit(currentPlan)}
-            disabled={!currentPlan}
-            className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-            title="Edit selected plan"
+            onClick={() => setIsEditModalOpen(true)}
+            className="flex items-center gap-2 btn-primary"
           >
-            <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={!currentPlan}
-            className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
-            title="Delete selected plan"
-          >
-            <Trash2 className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
+            New Plan
           </button>
         </div>
-      )}
+
+        {plans.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">
+            No seating plans yet. Create your first plan to get started.
+          </p>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <select
+                value={currentPlan?.id || ''}
+                onChange={(e) => switchPlan(e.target.value)}
+                className="form-input"
+              >
+                {plans.map((plan) => (
+                  <option key={plan.id} value={plan.id}>
+                    {plan.name} {plan.description ? `- ${plan.description}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={() => currentPlan && handleEdit(currentPlan)}
+              disabled={!currentPlan}
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              title="Edit selected plan"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={!currentPlan}
+              className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+              title="Delete selected plan"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Score Sets Section */}
+        {currentPlan && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="section-heading">Score Sets</h2>
+              <button
+                onClick={() => setIsCreateScoreSetModalOpen(true)}
+                className="flex items-center gap-2 btn-primary"
+              >
+                <Plus className="h-4 w-4" />
+                New Score Set
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <select
+                  value={currentScoreSet?.id || ''}
+                  onChange={(e) => switchScoreSet(e.target.value)}
+                  className="form-input"
+                >
+                  {currentPlan && Object.entries(currentPlan.scoreSets).map(([id, scoreSet]) => (
+                    <option key={id} value={id}>
+                      {scoreSet.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={handleRenameScoreSet}
+                disabled={!currentScoreSet}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+                title="Rename selected score set"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              {currentPlan && Object.keys(currentPlan.scoreSets).length > 1 && (
+                <button
+                  onClick={handleDeleteScoreSet}
+                  disabled={!currentScoreSet}
+                  className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                  title="Delete selected score set"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       <EditPlanModal
         isOpen={isEditModalOpen}
@@ -178,6 +263,161 @@ export default function SeatingPlanSelector() {
         initialName={editingPlan?.name}
         initialDescription={editingPlan?.description}
       />
+
+      <CreateScoreSetModal
+        isOpen={isCreateScoreSetModalOpen}
+        onClose={() => setIsCreateScoreSetModalOpen(false)}
+        onSave={createScoreSet}
+      />
+
+      <RenameScoreSetModal
+        isOpen={isRenameScoreSetModalOpen}
+        onClose={() => setIsRenameScoreSetModalOpen(false)}
+        currentName={currentScoreSet?.name || ''}
+        onSave={(newName) => {
+          if (currentScoreSet) {
+            renameScoreSet(currentScoreSet.id, newName);
+          }
+          setIsRenameScoreSetModalOpen(false);
+        }}
+      />
+    </>
+  );
+}
+
+interface CreateScoreSetModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (name: string) => void;
+}
+
+function CreateScoreSetModal({ isOpen, onClose, onSave }: CreateScoreSetModalProps) {
+  const [name, setName] = useState('');
+
+  if (!isOpen) return null;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSave(name.trim());
+    setName('');
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="modal-title">Create New Score Set</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          <div>
+            <label htmlFor="scoreSetName" className="form-label">
+              Score Set Name
+            </label>
+            <input
+              type="text"
+              id="scoreSetName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="form-input"
+              placeholder="e.g., Week 1, Math Quiz, etc."
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+            >
+              Create Score Set
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+interface RenameScoreSetModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  currentName: string;
+  onSave: (newName: string) => void;
+}
+
+function RenameScoreSetModal({ isOpen, onClose, currentName, onSave }: RenameScoreSetModalProps) {
+  const [name, setName] = useState(currentName);
+
+  if (!isOpen) return null;
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    onSave(name.trim());
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="modal-title">Rename Score Set</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          <div>
+            <label htmlFor="scoreSetName" className="form-label">
+              Score Set Name
+            </label>
+            <input
+              type="text"
+              id="scoreSetName"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="form-input"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

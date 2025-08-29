@@ -196,8 +196,6 @@ export default function SeatingPlanPage({ classId, classData }: SeatingPlanPageP
           
           {currentPlan && <ScoreSetSelector />}
           
-          {currentPlan && <PointsManipulation />}
-          
           {currentPlan && <SelectionButtons />}
 
           <div className="space-y-6">

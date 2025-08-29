@@ -36,6 +36,7 @@ export default function SeatingPlanPage({ classId, classData }: SeatingPlanPageP
   const currentPlan = getCurrentPlan();
   const availablePlans = classId ? getPlansForClass(classId) : [];
 
+  function exportScores() {
     const { getCurrentScoreSet } = useSeatingStore.getState();
     const currentScoreSet = getCurrentScoreSet();
     if (!currentScoreSet) return;
@@ -121,6 +122,9 @@ export default function SeatingPlanPage({ classId, classData }: SeatingPlanPageP
       }
     });
   }
+
+  const availableSeats = currentPlan ? currentPlan.gridSettings.rows * currentPlan.gridSettings.cols - currentPlan.lockedSeats.length : 0;
+  const totalStudents = classData.students.filter(student => !isStudentAbsent(classId, student.id)).length;
 
   return (
     <div>

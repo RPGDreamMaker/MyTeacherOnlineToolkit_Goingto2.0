@@ -252,7 +252,7 @@ export default function SeatingPlanSelector() {
                 <select
                   value={currentScoreSet?.id || ''}
                   onChange={(e) => switchScoreSet(e.target.value)}
-                  className="form-input"
+                  className="form-input font-bold"
                   style={{
                     backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
                     borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
@@ -262,8 +262,10 @@ export default function SeatingPlanSelector() {
                     <option 
                       key={id} 
                       value={id}
-                      style={{
-                        backgroundColor: scoreSet.color ? `${scoreSet.color}20` : undefined
+                        backgroundColor: plan.color ? `${plan.color}20` : undefined,
+                        fontWeight: 'bold'
+                        backgroundColor: scoreSet.color ? `${scoreSet.color}20` : undefined,
+                        fontWeight: 'bold'
                       }}
                     >
                       {scoreSet.name}

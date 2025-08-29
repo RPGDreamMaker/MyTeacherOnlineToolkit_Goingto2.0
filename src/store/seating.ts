@@ -23,6 +23,7 @@ interface SeatingPlan {
   id: string;
   name: string;
   description: string;
+  color?: string;
   createdAt: string;
   modifiedAt: string;
   seats: Seat[];
@@ -83,6 +84,7 @@ export const useSeatingStore = create<SeatingState>()(
           id: crypto.randomUUID(),
           name,
           description,
+          color: '#d50f25', // Default red color
           createdAt: new Date().toISOString(),
           modifiedAt: new Date().toISOString(),
           seats: [],
@@ -92,7 +94,8 @@ export const useSeatingStore = create<SeatingState>()(
             [defaultScoreSetId]: {
               name: 'Default Scores',
               scores: {},
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              color: '#3369e8' // Default blue color
             }
           },
           currentScoreSetId: defaultScoreSetId,
@@ -203,7 +206,8 @@ export const useSeatingStore = create<SeatingState>()(
         const newScoreSet = {
           name,
           scores: {},
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          color: '#3369e8' // Default blue color
         };
 
         set(state => ({

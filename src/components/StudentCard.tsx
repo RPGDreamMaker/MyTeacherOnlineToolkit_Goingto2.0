@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useSeatingStore } from '../store/seating';
-import { Plus, Minus } from 'lucide-react';
+import { useClassesStore } from '../store/classes';
+import { Plus, Minus, UserCheck, UserX } from 'lucide-react';
 import { useState } from 'react';
 
 interface StudentCardProps {
@@ -16,6 +17,7 @@ export default function StudentCard({
 }: StudentCardProps) {
   const { classId } = useParams<{ classId: string }>();
   const { getStudent, updateStudentScore, getCurrentPlan, getCurrentScoreSet } = useSeatingStore();
+  const { isStudentAbsent, toggleStudentAbsent } = useClassesStore();
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipTimeout, setTooltipTimeout] = useState<number | null>(null);
   
@@ -25,6 +27,7 @@ export default function StudentCard({
   const currentPlan = getCurrentPlan();
   const currentScoreSet = getCurrentScoreSet();
   const score = currentScoreSet?.scores?.[studentId] ?? 0;
+  const isAbsent = isStudentAbsent(classId, studentId);
 
   if (!student) return null;
 
@@ -48,6 +51,11 @@ export default function StudentCard({
     }
     setShowTooltip(false);
   };
+  
+  const handleToggleAbsent = () => {
+    toggleStudentAbsent(classId, studentId);
+  };
+  
   return (
     <div
       className="relative h-full"
@@ -60,16 +68,17 @@ export default function StudentCard({
           e.dataTransfer.setData('text/plain', studentId);
           onDragStart?.();
         }}
-        className="h-full flex flex-col justify-between"
+        className={`h-full flex flex-col justify-between ${isAbsent ? 'opacity-50' : ''}`}
       >
         <div className="text-center">
-          <div className="text-lg font-bold text-gray-900 truncate">
+          <div className={`text-lg font-bold text-gray-900 truncate ${isAbsent ? 'line-through' : ''}`}>
             {student.firstName}
           </div>
           <div className="flex items-center justify-center gap-2 mt-2">
             <button
               onClick={() => handleScoreUpdate(-1)}
-              className="text-red-500 hover:text-red-600 p-1 rounded-full transition-colors"
+              className={`text-red-500 hover:text-red-600 p-1 rounded-full transition-colors ${isAbsent ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isAbsent}
             >
               <Minus className="h-5 w-5" />
             </button>
@@ -78,9 +87,23 @@ export default function StudentCard({
             </span>
             <button
               onClick={() => handleScoreUpdate(1)}
-              className="text-green-500 hover:text-green-600 p-1 rounded-full transition-colors"
+              className={`text-green-500 hover:text-green-600 p-1 rounded-full transition-colors ${isAbsent ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isAbsent}
             >
               <Plus className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="mt-2">
+            <button
+              onClick={handleToggleAbsent}
+              className={`p-1 rounded-full transition-colors ${
+                isAbsent 
+                  ? 'text-red-500 hover:text-red-600' 
+                  : 'text-green-500 hover:text-green-600'
+              }`}
+              title={isAbsent ? 'Mark as present' : 'Mark as absent'}
+            >
+              {isAbsent ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
             </button>
           </div>
         </div>

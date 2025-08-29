@@ -478,6 +478,13 @@ export const useSeatingStore = create<SeatingState>()(
         const currentPlan = get().getCurrentPlan();
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet || currentPlan.classId !== classId) return;
+        
+        // Import classes store to check absent students
+        const { useClassesStore } = require('./classes');
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
+        
+        // Don't update scores for absent students
+        if (isStudentAbsent(classId, studentId)) return;
       
         set(state => ({
           plans: state.plans.map(plan =>
@@ -505,6 +512,10 @@ export const useSeatingStore = create<SeatingState>()(
         const currentPlan = get().getCurrentPlan();
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet) return;
+        
+        // Import classes store to check absent students
+        const { useClassesStore } = require('./classes');
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         set(state => ({
           plans: state.plans.map(plan =>
@@ -516,10 +527,12 @@ export const useSeatingStore = create<SeatingState>()(
                     [currentScoreSet.id]: {
                       ...plan.scoreSets[currentScoreSet.id],
                       scores: Object.fromEntries(
-                    currentPlan.seats.map(seat => [
-                      seat.studentId,
-                      Math.max(0, (currentScoreSet.scores[seat.studentId] || 0) + delta)
-                    ])
+                        currentPlan.seats
+                          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
+                          .map(seat => [
+                            seat.studentId,
+                            Math.max(0, (currentScoreSet.scores[seat.studentId] || 0) + delta)
+                          ])
                       )
                     }
                   },
@@ -534,6 +547,10 @@ export const useSeatingStore = create<SeatingState>()(
         const currentPlan = get().getCurrentPlan();
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet) return;
+        
+        // Import classes store to check absent students
+        const { useClassesStore } = require('./classes');
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         set(state => ({
           plans: state.plans.map(plan =>
@@ -545,10 +562,12 @@ export const useSeatingStore = create<SeatingState>()(
                     [currentScoreSet.id]: {
                       ...plan.scoreSets[currentScoreSet.id],
                       scores: Object.fromEntries(
-                    currentPlan.seats.map(seat => [
-                      seat.studentId,
-                      Math.max(0, score)
-                    ])
+                        currentPlan.seats
+                          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
+                          .map(seat => [
+                            seat.studentId,
+                            Math.max(0, score)
+                          ])
                       )
                     }
                   },
@@ -563,6 +582,10 @@ export const useSeatingStore = create<SeatingState>()(
         const currentPlan = get().getCurrentPlan();
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet) return;
+        
+        // Import classes store to check absent students
+        const { useClassesStore } = require('./classes');
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         const seatedStudents = currentPlan.seats.map(seat => ({
           studentId: seat.studentId,
@@ -570,7 +593,9 @@ export const useSeatingStore = create<SeatingState>()(
         }));
 
         const eligibleStudents = seatedStudents.filter(student => 
-          student.score >= minScore && student.score < maxScore
+          student.score >= minScore && 
+          student.score < maxScore && 
+          !isStudentAbsent(currentPlan.classId, student.studentId)
         );
 
         const selectedStudents: string[] = [];
@@ -598,15 +623,21 @@ export const useSeatingStore = create<SeatingState>()(
       getRandomStudentsFromSides: () => {
         const currentPlan = get().getCurrentPlan();
         if (!currentPlan) return;
+        
+        // Import classes store to check absent students
+        const { useClassesStore } = require('./classes');
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         const midCol = Math.floor(currentPlan.gridSettings.cols / 2);
         
         const leftSideStudents = currentPlan.seats
           .filter(seat => seat.col < midCol)
+          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
           .map(seat => seat.studentId);
 
         const rightSideStudents = currentPlan.seats
           .filter(seat => seat.col >= midCol)
+          .filter(seat => !isStudentAbsent(currentPlan.classId, seat.studentId))
           .map(seat => seat.studentId);
 
         const selectedStudents: string[] = [];
@@ -669,7 +700,14 @@ export const useSeatingStore = create<SeatingState>()(
         if (!currentPlan || currentPlan.classId !== classId) return classStudents;
 
         const assignedStudentIds = new Set(currentPlan.seats.map(s => s.studentId));
-        return classStudents.filter(student => !assignedStudentIds.has(student.id));
+        
+        // Import classes store to check absent students
+        const { useClassesStore } = require('./classes');
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
+        
+        return classStudents.filter(student => 
+          !assignedStudentIds.has(student.id) && !isStudentAbsent(classId, student.id)
+        );
       },
 
       getPlansForClass: (classId) => {

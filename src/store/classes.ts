@@ -13,6 +13,7 @@ export interface Class {
   description?: string;
   displayOrder: number;
   students: Student[];
+  absentStudents: string[];
 }
 
 interface ClassesState {
@@ -25,6 +26,8 @@ interface ClassesState {
   updateStudent: (classId: string, studentId: string, updates: Omit<Student, 'id'>) => void;
   deleteStudent: (classId: string, studentId: string) => void;
   importStudents: (classId: string, students: Omit<Student, 'id'>[]) => void;
+  toggleStudentAbsent: (classId: string, studentId: string) => void;
+  isStudentAbsent: (classId: string, studentId: string) => boolean;
 }
 
 export const useClassesStore = create<ClassesState>()(
@@ -36,7 +39,8 @@ export const useClassesStore = create<ClassesState>()(
           ...newClass,
           id: crypto.randomUUID(),
           displayOrder: (state.classes.length + 1) * 10,
-          students: []
+          students: [],
+          absentStudents: []
         }]
       })),
       updateClass: (classId, updates) => set((state) => ({
@@ -112,6 +116,23 @@ export const useClassesStore = create<ClassesState>()(
               }
             : c
         )
+      })),
+      toggleStudentAbsent: (classId, studentId) => set((state) => ({
+        classes: state.classes.map((c) => 
+          c.id === classId 
+            ? {
+                ...c,
+                absentStudents: c.absentStudents?.includes(studentId)
+                  ? c.absentStudents.filter(id => id !== studentId)
+                  : [...(c.absentStudents || []), studentId]
+              }
+            : c
+        )
+      })),
+      isStudentAbsent: (classId, studentId) => {
+        const state = get();
+        const classData = state.classes.find(c => c.id === classId);
+        return classData?.absentStudents?.includes(studentId) || false;
       }))
     }),
     {

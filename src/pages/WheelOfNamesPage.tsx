@@ -18,6 +18,7 @@ interface Student {
 export default function WheelOfNamesPage() {
   const { classId } = useParams<{ classId: string }>();
   const { classes } = useClassesStore();
+  const { isStudentAbsent, toggleStudentAbsent } = useClassesStore();
   const {
     initialize,
     getAvailableStudents,
@@ -25,8 +26,6 @@ export default function WheelOfNamesPage() {
     selectStudent,
     returnStudent,
     returnAllStudents,
-    toggleAttendance,
-    isAbsent,
     infiniteMode,
     setInfiniteMode,
   } = useWheelStore();
@@ -73,9 +72,9 @@ export default function WheelOfNamesPage() {
           <div className="flex justify-center items-start gap-8">
             <StudentList
               students={classData.students}
-              absentees={new Set(classData.students.filter(s => isAbsent(s.id)).map(s => s.id))}
+              absentees={new Set(classData.students.filter(s => isStudentAbsent(classId, s.id)).map(s => s.id))}
               selectedStudents={selectedStudentIds}
-              onToggleAttendance={toggleAttendance}
+              onToggleAttendance={(studentId) => toggleStudentAbsent(classId, studentId)}
               onSelectStudent={(student) => !isSpinning && selectStudent(student.id)}
               disabled={isSpinning}
             />

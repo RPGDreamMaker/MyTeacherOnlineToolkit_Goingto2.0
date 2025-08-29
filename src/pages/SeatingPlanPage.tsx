@@ -107,7 +107,7 @@ export default function SeatingPlanPage() {
       updateSeat(seat.studentId, null, null);
     });
 
-    let studentsToPlace = [...classData.students];
+    let studentsToPlace = classData.students.filter(student => !isStudentAbsent(classId, student.id));
 
     // Sort students if alphabetical is selected
     if (alphabetical) {

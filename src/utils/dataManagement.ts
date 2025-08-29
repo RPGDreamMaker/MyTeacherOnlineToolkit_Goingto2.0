@@ -77,6 +77,11 @@ export async function importAppData(file: File): Promise<void> {
         plan.lockedSeats = [];
       }
       
+      // Add absentStudents if it doesn't exist
+      if (!plan.absentStudents) {
+        plan.absentStudents = [];
+      }
+      
       if (plan.scores && !plan.scoreSets) {
         // Old format - migrate to new format
         const defaultScoreSetId = crypto.randomUUID();

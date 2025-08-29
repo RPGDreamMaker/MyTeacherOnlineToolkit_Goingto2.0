@@ -696,6 +696,11 @@ export const useSeatingStore = create<SeatingState>()(
           plan.lockedSeats = [];
         }
         
+        // Ensure absentStudents is always an array for backward compatibility
+        if (!plan.absentStudents) {
+          plan.absentStudents = [];
+        }
+        
         return plan;
       },
 

@@ -63,24 +63,47 @@ export default function StudentCard({
         className="h-full flex flex-col justify-between"
       >
         <div className="text-center">
-          <div className="text-lg font-bold text-gray-900 truncate">
+          <div className={`text-lg font-bold truncate ${isAbsent ? 'text-gray-400' : 'text-gray-900'}`}>
             {student.firstName}
           </div>
           <div className="flex items-center justify-center gap-2 mt-2">
             <button
               onClick={() => handleScoreUpdate(-1)}
-              className="text-red-500 hover:text-red-600 p-1 rounded-full transition-colors"
+              className={`p-1 rounded-full transition-colors ${
+                isAbsent 
+                  ? 'text-gray-300 cursor-not-allowed' 
+                  : 'text-red-500 hover:text-red-600'
+              }`}
+              disabled={isAbsent}
             >
               <Minus className="h-5 w-5" />
             </button>
-            <span className="text-lg font-medium">
+            <span className={`text-lg font-medium ${isAbsent ? 'text-gray-400' : 'text-gray-900'}`}>
               {score}
             </span>
             <button
               onClick={() => handleScoreUpdate(1)}
-              className="text-green-500 hover:text-green-600 p-1 rounded-full transition-colors"
+              className={`p-1 rounded-full transition-colors ${
+                isAbsent 
+                  ? 'text-gray-300 cursor-not-allowed' 
+                  : 'text-green-500 hover:text-green-600'
+              }`}
+              disabled={isAbsent}
             >
               <Plus className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="flex justify-center mt-1">
+            <button
+              onClick={() => toggleStudentAbsent(studentId)}
+              className={`p-1 rounded-full transition-colors ${
+                isAbsent 
+                  ? 'text-red-500 hover:text-red-600' 
+                  : 'text-green-500 hover:text-green-600'
+              }`}
+              title={isAbsent ? 'Mark as present' : 'Mark as absent'}
+            >
+              {isAbsent ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
             </button>
           </div>
         </div>

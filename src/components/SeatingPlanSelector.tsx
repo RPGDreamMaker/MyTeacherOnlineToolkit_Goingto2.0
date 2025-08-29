@@ -257,11 +257,21 @@ export default function SeatingPlanSelector() {
                   onChange={(e) => switchScoreSet(e.target.value)}
                   className="form-input"
                   style={{
-                    borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
-                  }}
-                >
+                    backgroundColor: currentScoreSet?.color || '#3369e8',
+                    color: 'white',
+                    fontWeight: 'bold'
+                    color: 'white',
+                        backgroundColor: plan.color || '#d50f25',
+                        color: 'white'
                   {currentPlan && Object.entries(currentPlan.scoreSets).map(([id, scoreSet]) => (
-                    <option key={id} value={id}>
+                    <option 
+                      key={id} 
+                      value={id}
+                      style={{
+                        backgroundColor: scoreSet.color || '#3369e8',
+                        color: 'white'
+                      }}
+                    >
                       {scoreSet.name}
                     </option>
                   ))}
@@ -281,9 +291,6 @@ export default function SeatingPlanSelector() {
               {currentPlan && Object.keys(currentPlan.scoreSets).length > 1 && (
                 <button
                   onClick={handleDeleteScoreSet}
-                  disabled={!currentScoreSet}
-                  className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
-                  title="Delete selected score set"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

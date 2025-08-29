@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useSeatingStore } from '../store/seating';
+import { useClassesStore } from '../store/classes';
 import { Move, Lock, Unlock } from 'lucide-react';
 import StudentCard from './StudentCard';
 
 export default function SeatingGrid() {
   const { getCurrentPlan, updateSeat, toggleSeatLock, isSeatLocked } = useSeatingStore();
+  const { isStudentAbsent } = useClassesStore();
   const [isDragging, setIsDragging] = useState(false);
   const currentPlan = getCurrentPlan();
 
@@ -57,6 +59,7 @@ export default function SeatingGrid() {
           const isLocked = isSeatLocked(row, col);
           const isOccupied = Boolean(seat);
           const isSelected = seat && currentPlan.selectedStudents?.includes(seat.studentId);
+          const isAbsent = seat && isStudentAbsent(currentPlan.classId, seat.studentId);
 
           return (
             <div
@@ -66,6 +69,7 @@ export default function SeatingGrid() {
               className={`
                 aspect-square border-2 rounded-lg p-4
                 ${isSelected ? 'border-yellow-400 bg-yellow-50' :
+                  isAbsent ? 'border-red-400 bg-red-100' :
                   isLocked ? 'border-red-300 bg-red-50' :
                   seat ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}
                 ${isDragging && (isOccupied || isLocked) ? 'cursor-no-drop' : 'hover:border-blue-400'}

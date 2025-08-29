@@ -170,7 +170,7 @@ export default function SelectionButtons() {
     }
   }
 
-  async function handleScoreSelection(score: number) {
+  async function handleScoreSelection(score: number | string) {
     setIsLoading(true);
     try {
       await selectStudentsByScore(score);
@@ -233,7 +233,7 @@ export default function SelectionButtons() {
               className="flex items-center justify-center gap-2 btn-primary disabled:opacity-50"
             >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Select 5 Students (<5 points)
+              Select 5 Students (&lt;5 points)
             </button>
             
             <button

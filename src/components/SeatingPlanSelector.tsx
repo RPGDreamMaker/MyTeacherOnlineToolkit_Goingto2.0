@@ -8,18 +8,15 @@ interface EditPlanModalProps {
   onClose: () => void;
   planId?: string;
   initialName?: string;
-  initialDescription?: string;
 }
 
 function EditPlanModal({
   isOpen,
   onClose,
   planId,
-  initialName = '',
-  initialDescription = ''
+  initialName = ''
 }: EditPlanModalProps) {
   const [name, setName] = useState(initialName);
-  const [description, setDescription] = useState(initialDescription);
   const { createPlan, updatePlan } = useSeatingStore();
   const { classId } = useParams<{ classId: string }>();
 
@@ -30,9 +27,9 @@ function EditPlanModal({
     if (!name.trim() || !classId) return;
 
     if (planId) {
-      updatePlan(planId, { name: name.trim(), description: description.trim() });
+      updatePlan(planId, { name: name.trim(), description: '' });
     } else {
-      createPlan(name.trim(), description.trim(), classId);
+      createPlan(name.trim(), '', classId);
     }
     onClose();
   }
@@ -56,18 +53,6 @@ function EditPlanModal({
                 onChange={(e) => setName(e.target.value)}
                 className="form-input"
                 required
-              />
-            </div>
-            
-            <div>
-              <label className="form-label">
-                Description (Optional)
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="form-input"
               />
             </div>
           </div>
@@ -178,7 +163,7 @@ export default function SeatingPlanSelector() {
               >
                 {plans.map((plan) => (
                   <option key={plan.id} value={plan.id}>
-                    {plan.name} {plan.description ? `- ${plan.description}` : ''}
+                    {plan.name}
                   </option>
                 ))}
               </select>
@@ -261,7 +246,6 @@ export default function SeatingPlanSelector() {
         }}
         planId={editingPlan?.id}
         initialName={editingPlan?.name}
-        initialDescription={editingPlan?.description}
       />
 
       <CreateScoreSetModal

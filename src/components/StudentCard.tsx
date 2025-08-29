@@ -37,19 +37,22 @@ export default function StudentCard({
     }
   };
 
-  const handleMouseEnter = () => {
-    const timeout = window.setTimeout(() => {
-      setShowTooltip(true);
-    }, 1000); // Show tooltip after 1 second
-    setTooltipTimeout(timeout);
-  };
-
-  const handleMouseLeave = () => {
+  const handleCardClick = () => {
+    // Clear any existing timeout
     if (tooltipTimeout) {
       clearTimeout(tooltipTimeout);
       setTooltipTimeout(null);
     }
-    setShowTooltip(false);
+    
+    // Show tooltip immediately
+    setShowTooltip(true);
+    
+    // Set timeout to hide tooltip after 2 seconds
+    const timeout = window.setTimeout(() => {
+      setShowTooltip(false);
+      setTooltipTimeout(null);
+    }, 2000);
+    setTooltipTimeout(timeout);
   };
   
   const handleToggleAbsent = () => {
@@ -57,17 +60,14 @@ export default function StudentCard({
   };
   
   return (
-    <div
-      className="relative h-full"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="relative h-full">
       <div
         draggable={isDraggable}
         onDragStart={(e) => {
           e.dataTransfer.setData('text/plain', studentId);
           onDragStart?.();
         }}
+        onClick={handleCardClick}
         className={`h-full flex flex-col justify-between ${isAbsent ? 'opacity-50' : ''}`}
       >
         <div className="text-center">
@@ -76,7 +76,10 @@ export default function StudentCard({
           </div>
           <div className="flex items-center justify-center gap-2 mt-2">
             <button
-              onClick={() => handleScoreUpdate(-1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleScoreUpdate(-1);
+              }}
               className={`text-red-500 hover:text-red-600 p-1 rounded-full transition-colors ${isAbsent ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isAbsent}
             >
@@ -86,7 +89,10 @@ export default function StudentCard({
               {score}
             </span>
             <button
-              onClick={() => handleScoreUpdate(1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleScoreUpdate(1);
+              }}
               className={`text-green-500 hover:text-green-600 p-1 rounded-full transition-colors ${isAbsent ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={isAbsent}
             >
@@ -95,7 +101,10 @@ export default function StudentCard({
           </div>
           <div className="mt-2">
             <button
-              onClick={handleToggleAbsent}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleAbsent();
+              }}
               className={`p-1 rounded-full transition-colors ${
                 isAbsent 
                   ? 'text-red-500 hover:text-red-600' 

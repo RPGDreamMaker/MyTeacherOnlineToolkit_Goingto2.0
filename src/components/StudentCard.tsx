@@ -68,7 +68,7 @@ export default function StudentCard({
           onDragStart?.();
         }}
         onClick={handleCardClick}
-        className={`h-full flex flex-col justify-between ${isAbsent ? 'opacity-50' : ''}`}
+        className={`h-full flex flex-col justify-between ${isAbsent ? 'bg-red-50 border-2 border-red-300' : ''}`}
       >
         <div className="text-center">
           <div className={`text-lg font-bold text-gray-900 truncate ${isAbsent ? 'line-through' : ''}`}>

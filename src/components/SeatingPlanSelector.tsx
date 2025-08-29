@@ -205,7 +205,7 @@ export default function SeatingPlanSelector() {
                   <option 
                     key={plan.id} 
                     style={{
-                      backgroundColor: scoreSet.color ? `${scoreSet.color}20` : undefined
+                      backgroundColor: plan.color ? `${plan.color}20` : undefined
                     }}
                     value={plan.id}
                   >

@@ -32,7 +32,7 @@ interface ClassesState {
 
 export const useClassesStore = create<ClassesState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       classes: [],
       addClass: (newClass) => set((state) => ({
         classes: [...state.classes, {

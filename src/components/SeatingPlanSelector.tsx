@@ -196,11 +196,27 @@ export default function SeatingPlanSelector() {
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
                 style={{
-                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
+                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
+                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                }}
                 }}
               >
                 {plans.map((plan) => (
-                  <option key={plan.id} value={plan.id}>
+                  <option 
+                    key={plan.id} 
+                    value={plan.id}
+                    style={{
+                      backgroundColor: `${plan.color || '#d50f25'}20`,
+                      color: '#000'
+                    }}
+                  <option 
+                    key={id} 
+                    value={id}
+                    style={{
+                      backgroundColor: `${scoreSet.color || '#3369e8'}20`,
+                      color: '#000'
+                    }}
+                  >
                     {plan.name}
                   </option>
                 ))}

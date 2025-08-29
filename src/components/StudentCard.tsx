@@ -83,6 +83,7 @@ export default function StudentCard({
               <Plus className="h-5 w-5" />
             </button>
           </div>
+        </div>
       </div>
       
       {showTooltip && (

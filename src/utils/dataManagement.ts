@@ -70,6 +70,26 @@ export async function importAppData(file: File): Promise<void> {
       throw new Error('Invalid file format. Please select a valid Teacher Toolkit backup file.');
     }
 
+    // Migrate old seating plans to new score sets format
+    const migratedSeatingPlans = (appData.seatingPlans || []).map((plan: any) => {
+      if (plan.scores && !plan.scoreSets) {
+        // Old format - migrate to new format
+        const defaultScoreSetId = crypto.randomUUID();
+        return {
+          ...plan,
+          scoreSets: {
+            [defaultScoreSetId]: {
+              name: 'Default Scores',
+              scores: plan.scores,
+              createdAt: plan.createdAt || new Date().toISOString()
+            }
+          },
+          currentScoreSetId: defaultScoreSetId,
+          scores: undefined // Remove old scores property
+        };
+      }
+      return plan;
+    });
     // Get store actions
     const classesActions = useClassesStore.getState();
     const seatingActions = useSeatingStore.getState();
@@ -83,7 +103,7 @@ export async function importAppData(file: File): Promise<void> {
     });
 
     useSeatingStore.setState({
-      plans: appData.seatingPlans || [],
+      plans: migratedSeatingPlans,
       currentPlanId: appData.seatingCurrentPlanId || null,
       students: {} // Will be reinitialized when visiting seating pages
     });

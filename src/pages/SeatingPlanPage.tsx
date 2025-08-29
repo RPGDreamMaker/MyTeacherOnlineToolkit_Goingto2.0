@@ -7,6 +7,7 @@ import SeatingGrid from '../components/SeatingGrid';
 import UnassignedStudents from '../components/UnassignedStudents';
 import GridSettingsModal from '../components/GridSettingsModal';
 import SeatingPlanSelector from '../components/SeatingPlanSelector';
+import ScoreSetSelector from '../components/ScoreSetSelector';
 import CopySeatingModal from '../components/CopySeatingModal';
 import SelectionButtons from '../components/SelectionButtons';
 import PointsManipulation from '../components/PointsManipulation';
@@ -42,9 +43,13 @@ export default function SeatingPlanPage() {
   function exportScores() {
     if (!currentPlan || !classId || !classData) return;
 
+    const { getCurrentScoreSet } = useSeatingStore.getState();
+    const currentScoreSet = getCurrentScoreSet();
+    if (!currentScoreSet) return;
+
     const studentScores = classData.students.map(student => ({
       ...student,
-      score: currentPlan.scores[student.id] || 0
+      score: currentScoreSet.scores[student.id] || 0
     }));
 
     studentScores.sort((a, b) => 
@@ -55,6 +60,7 @@ export default function SeatingPlanPage() {
     const content = [
       `Class: ${classData.name}`,
       `Seating Plan: ${currentPlan.name}`,
+      `Score Set: ${currentScoreSet.name}`,
       `Date: ${new Date().toLocaleDateString()}`,
       '',
       'Student Scores:',
@@ -68,7 +74,7 @@ export default function SeatingPlanPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const fileName = `${classData.name.replace(/[^a-z0-9]/gi, '_')}_${currentPlan.name.replace(/[^a-z0-9]/gi, '_')}_scores.txt`.toLowerCase();
+    const fileName = `${classData.name.replace(/[^a-z0-9]/gi, '_')}_${currentPlan.name.replace(/[^a-z0-9]/gi, '_')}_${currentScoreSet.name.replace(/[^a-z0-9]/gi, '_')}_scores.txt`.toLowerCase();
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
@@ -190,6 +196,8 @@ export default function SeatingPlanPage() {
           </div>
 
           <SeatingPlanSelector />
+          
+          {currentPlan && <ScoreSetSelector />}
           
           {currentPlan && <PointsManipulation />}
           

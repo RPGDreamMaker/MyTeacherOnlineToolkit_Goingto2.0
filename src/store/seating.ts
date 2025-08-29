@@ -27,7 +27,8 @@ interface SeatingPlan {
   seats: Seat[];
   gridSettings: GridSettings;
   classId: string;
-  scores: Record<string, number>;
+  scoreSets: Record<string, { name: string; scores: Record<string, number>; createdAt: string }>;
+  currentScoreSetId: string | null;
   selectedStudents?: string[];
 }
 
@@ -42,6 +43,10 @@ interface SeatingState {
   updatePlan: (planId: string, updates: Partial<Omit<SeatingPlan, 'id' | 'createdAt'>>) => void;
   deletePlan: (planId: string) => void;
   switchPlan: (planId: string | null) => void;
+  createScoreSet: (name: string) => void;
+  switchScoreSet: (scoreSetId: string | null) => void;
+  deleteScoreSet: (scoreSetId: string) => void;
+  renameScoreSet: (scoreSetId: string, newName: string) => void;
   updateSeat: (studentId: string, row: number | null, col: number | null) => void;
   updateGridSettings: (settings: GridSettings) => void;
   resetSeating: () => void;
@@ -56,6 +61,7 @@ interface SeatingState {
   
   // Computed
   getCurrentPlan: () => SeatingPlan | null;
+  getCurrentScoreSet: () => { id: string; name: string; scores: Record<string, number> } | null;
   getUnassignedStudents: (classId: string) => Student[];
   getPlansForClass: (classId: string) => SeatingPlan[];
 }
@@ -68,6 +74,7 @@ export const useSeatingStore = create<SeatingState>()(
       plans: [],
 
       createPlan: (name, description, classId) => {
+        const defaultScoreSetId = crypto.randomUUID();
         const newPlan: SeatingPlan = {
           id: crypto.randomUUID(),
           name,
@@ -77,7 +84,14 @@ export const useSeatingStore = create<SeatingState>()(
           seats: [],
           gridSettings: { rows: 4, cols: 8 },
           classId,
-          scores: {}
+          scoreSets: {
+            [defaultScoreSetId]: {
+              name: 'Default Scores',
+              scores: {},
+              createdAt: new Date().toISOString()
+            }
+          },
+          currentScoreSetId: defaultScoreSetId
         };
 
         set(state => ({
@@ -90,6 +104,29 @@ export const useSeatingStore = create<SeatingState>()(
         const sourcePlan = get().plans.find(p => p.id === sourcePlanId);
         if (!sourcePlan) return;
 
+        const defaultScoreSetId = crypto.randomUUID();
+        let newScoreSets;
+        
+        if (resetScores) {
+          newScoreSets = {
+            [defaultScoreSetId]: {
+              name: 'Default Scores',
+              scores: {},
+              createdAt: new Date().toISOString()
+            }
+          };
+        } else {
+          // Copy all score sets
+          newScoreSets = Object.fromEntries(
+            Object.entries(sourcePlan.scoreSets).map(([_, scoreSet]) => {
+              const newId = crypto.randomUUID();
+              return [newId, {
+                ...scoreSet,
+                createdAt: new Date().toISOString()
+              }];
+            })
+          );
+        }
         const newPlan: SeatingPlan = {
           id: crypto.randomUUID(),
           name,
@@ -99,7 +136,8 @@ export const useSeatingStore = create<SeatingState>()(
           seats: [...sourcePlan.seats],
           gridSettings: { ...sourcePlan.gridSettings },
           classId: sourcePlan.classId,
-          scores: resetScores ? {} : { ...sourcePlan.scores }
+          scoreSets: newScoreSets,
+          currentScoreSetId: resetScores ? defaultScoreSetId : Object.keys(newScoreSets)[0]
         };
 
         set(state => ({
@@ -151,6 +189,101 @@ export const useSeatingStore = create<SeatingState>()(
         }
       },
 
+      createScoreSet: (name) => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan) return;
+
+        const newScoreSetId = crypto.randomUUID();
+        const newScoreSet = {
+          name,
+          scores: {},
+          createdAt: new Date().toISOString()
+        };
+
+        set(state => ({
+          plans: state.plans.map(plan =>
+            plan.id === currentPlan.id
+              ? {
+                  ...plan,
+                  scoreSets: {
+                    ...plan.scoreSets,
+                    [newScoreSetId]: newScoreSet
+                  },
+                  currentScoreSetId: newScoreSetId,
+                  modifiedAt: new Date().toISOString()
+                }
+              : plan
+          )
+        }));
+      },
+
+      switchScoreSet: (scoreSetId) => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan || !scoreSetId) return;
+
+        if (currentPlan.scoreSets[scoreSetId]) {
+          set(state => ({
+            plans: state.plans.map(plan =>
+              plan.id === currentPlan.id
+                ? {
+                    ...plan,
+                    currentScoreSetId: scoreSetId,
+                    modifiedAt: new Date().toISOString()
+                  }
+                : plan
+            )
+          }));
+        }
+      },
+
+      deleteScoreSet: (scoreSetId) => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan) return;
+
+        const scoreSetIds = Object.keys(currentPlan.scoreSets);
+        if (scoreSetIds.length <= 1) return; // Don't delete the last score set
+
+        const { [scoreSetId]: deleted, ...remainingScoreSets } = currentPlan.scoreSets;
+        const newCurrentScoreSetId = currentPlan.currentScoreSetId === scoreSetId
+          ? Object.keys(remainingScoreSets)[0]
+          : currentPlan.currentScoreSetId;
+
+        set(state => ({
+          plans: state.plans.map(plan =>
+            plan.id === currentPlan.id
+              ? {
+                  ...plan,
+                  scoreSets: remainingScoreSets,
+                  currentScoreSetId: newCurrentScoreSetId,
+                  modifiedAt: new Date().toISOString()
+                }
+              : plan
+          )
+        }));
+      },
+
+      renameScoreSet: (scoreSetId, newName) => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan || !currentPlan.scoreSets[scoreSetId]) return;
+
+        set(state => ({
+          plans: state.plans.map(plan =>
+            plan.id === currentPlan.id
+              ? {
+                  ...plan,
+                  scoreSets: {
+                    ...plan.scoreSets,
+                    [scoreSetId]: {
+                      ...plan.scoreSets[scoreSetId],
+                      name: newName
+                    }
+                  },
+                  modifiedAt: new Date().toISOString()
+                }
+              : plan
+          )
+        }));
+      },
       updateGridSettings: (settings) => {
         if (settings.rows < 1 || settings.cols < 1 || 
             settings.rows > 20 || settings.cols > 20) {
@@ -296,16 +429,23 @@ export const useSeatingStore = create<SeatingState>()(
 
       updateStudentScore: (studentId, classId, delta) => {
         const currentPlan = get().getCurrentPlan();
-        if (!currentPlan || currentPlan.classId !== classId) return;
+        const currentScoreSet = get().getCurrentScoreSet();
+        if (!currentPlan || !currentScoreSet || currentPlan.classId !== classId) return;
       
         set(state => ({
           plans: state.plans.map(plan =>
             plan.id === currentPlan.id
               ? {
                   ...plan,
-                  scores: {
-                    ...plan.scores,
-                    [studentId]: Math.max(0, (plan.scores[studentId] || 0) + delta)
+                  scoreSets: {
+                    ...plan.scoreSets,
+                    [currentScoreSet.id]: {
+                      ...plan.scoreSets[currentScoreSet.id],
+                      scores: {
+                        ...currentScoreSet.scores,
+                        [studentId]: Math.max(0, (currentScoreSet.scores[studentId] || 0) + delta)
+                      }
+                    }
                   },
                   modifiedAt: new Date().toISOString()
                 }
@@ -316,19 +456,26 @@ export const useSeatingStore = create<SeatingState>()(
 
       updateAllStudentScores: (delta) => {
         const currentPlan = get().getCurrentPlan();
-        if (!currentPlan) return;
+        const currentScoreSet = get().getCurrentScoreSet();
+        if (!currentPlan || !currentScoreSet) return;
 
         set(state => ({
           plans: state.plans.map(plan =>
             plan.id === currentPlan.id
               ? {
                   ...plan,
-                  scores: Object.fromEntries(
+                  scoreSets: {
+                    ...plan.scoreSets,
+                    [currentScoreSet.id]: {
+                      ...plan.scoreSets[currentScoreSet.id],
+                      scores: Object.fromEntries(
                     currentPlan.seats.map(seat => [
                       seat.studentId,
-                      Math.max(0, (plan.scores[seat.studentId] || 0) + delta)
+                      Math.max(0, (currentScoreSet.scores[seat.studentId] || 0) + delta)
                     ])
-                  ),
+                      )
+                    }
+                  },
                   modifiedAt: new Date().toISOString()
                 }
               : plan
@@ -338,19 +485,26 @@ export const useSeatingStore = create<SeatingState>()(
 
       setAllStudentScores: (score) => {
         const currentPlan = get().getCurrentPlan();
-        if (!currentPlan) return;
+        const currentScoreSet = get().getCurrentScoreSet();
+        if (!currentPlan || !currentScoreSet) return;
 
         set(state => ({
           plans: state.plans.map(plan =>
             plan.id === currentPlan.id
               ? {
                   ...plan,
-                  scores: Object.fromEntries(
+                  scoreSets: {
+                    ...plan.scoreSets,
+                    [currentScoreSet.id]: {
+                      ...plan.scoreSets[currentScoreSet.id],
+                      scores: Object.fromEntries(
                     currentPlan.seats.map(seat => [
                       seat.studentId,
                       Math.max(0, score)
                     ])
-                  ),
+                      )
+                    }
+                  },
                   modifiedAt: new Date().toISOString()
                 }
               : plan
@@ -360,11 +514,12 @@ export const useSeatingStore = create<SeatingState>()(
 
       getRandomStudents: (count, minScore, maxScore) => {
         const currentPlan = get().getCurrentPlan();
-        if (!currentPlan) return;
+        const currentScoreSet = get().getCurrentScoreSet();
+        if (!currentPlan || !currentScoreSet) return;
 
         const seatedStudents = currentPlan.seats.map(seat => ({
           studentId: seat.studentId,
-          score: currentPlan.scores[seat.studentId] || 0
+          score: currentScoreSet.scores[seat.studentId] || 0
         }));
 
         const eligibleStudents = seatedStudents.filter(student => 
@@ -438,6 +593,19 @@ export const useSeatingStore = create<SeatingState>()(
         return state.plans.find(p => p.id === state.currentPlanId) ?? null;
       },
 
+      getCurrentScoreSet: () => {
+        const currentPlan = get().getCurrentPlan();
+        if (!currentPlan || !currentPlan.currentScoreSetId) return null;
+        
+        const scoreSet = currentPlan.scoreSets[currentPlan.currentScoreSetId];
+        if (!scoreSet) return null;
+        
+        return {
+          id: currentPlan.currentScoreSetId,
+          name: scoreSet.name,
+          scores: scoreSet.scores
+        };
+      },
       getUnassignedStudents: (classId) => {
         const state = get();
         const currentPlan = state.getCurrentPlan();

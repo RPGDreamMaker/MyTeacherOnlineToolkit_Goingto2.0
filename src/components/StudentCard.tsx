@@ -14,18 +14,19 @@ export default function StudentCard({
   onDragStart 
 }: StudentCardProps) {
   const { classId } = useParams<{ classId: string }>();
-  const { getStudent, updateStudentScore, getCurrentPlan } = useSeatingStore();
+  const { getStudent, updateStudentScore, getCurrentPlan, getCurrentScoreSet } = useSeatingStore();
   
   if (!classId) return null;
   
   const student = getStudent(studentId, classId);
   const currentPlan = getCurrentPlan();
-  const score = currentPlan?.scores?.[studentId] ?? 0;
+  const currentScoreSet = getCurrentScoreSet();
+  const score = currentScoreSet?.scores?.[studentId] ?? 0;
 
   if (!student) return null;
 
   const handleScoreUpdate = (delta: number) => {
-    if (currentPlan) {
+    if (currentPlan && currentScoreSet) {
       updateStudentScore(studentId, classId, delta);
     }
   };

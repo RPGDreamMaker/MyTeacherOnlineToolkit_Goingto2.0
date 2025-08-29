@@ -98,7 +98,9 @@ export const useSeatingStore = create<SeatingState>()(
             }
           },
           currentScoreSetId: defaultScoreSetId,
-          lockedSeats: []
+          lockedSeats: [],
+          selectedStudents: [],
+          absentStudents: []
         };
 
         set(state => ({
@@ -193,7 +195,9 @@ export const useSeatingStore = create<SeatingState>()(
           classId: sourcePlan.classId,
           scoreSets: newScoreSets,
           currentScoreSetId: resetScores ? defaultScoreSetId : Object.keys(newScoreSets)[0],
-          lockedSeats: [...sourcePlan.lockedSeats]
+          lockedSeats: [...sourcePlan.lockedSeats],
+          selectedStudents: [...(sourcePlan.selectedStudents || [])],
+          absentStudents: [...(sourcePlan.absentStudents || [])]
         };
 
         set(state => ({
@@ -746,8 +750,7 @@ export const useSeatingStore = create<SeatingState>()(
       name: 'seating-storage',
       partialize: (state) => ({
         plans: state.plans,
-        currentPlanId: state.currentPlanId,
-        students: state.students
+        currentPlanId: state.currentPlanId
       })
     }
   )

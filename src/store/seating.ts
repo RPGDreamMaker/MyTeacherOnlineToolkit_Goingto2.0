@@ -512,8 +512,6 @@ export const useSeatingStore = create<SeatingState>()(
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet) return;
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         set(state => ({
@@ -547,8 +545,6 @@ export const useSeatingStore = create<SeatingState>()(
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet) return;
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         set(state => ({
@@ -582,8 +578,6 @@ export const useSeatingStore = create<SeatingState>()(
         const currentScoreSet = get().getCurrentScoreSet();
         if (!currentPlan || !currentScoreSet) return;
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         const seatedStudents = currentPlan.seats.map(seat => ({
@@ -623,8 +617,6 @@ export const useSeatingStore = create<SeatingState>()(
         const currentPlan = get().getCurrentPlan();
         if (!currentPlan) return;
         
-        // Import classes store to check absent students
-        const { useClassesStore } = require('./classes');
         const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
 
         const midCol = Math.floor(currentPlan.gridSettings.cols / 2);

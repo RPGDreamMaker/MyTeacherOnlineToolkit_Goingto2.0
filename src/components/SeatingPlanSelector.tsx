@@ -254,6 +254,7 @@ export default function SeatingPlanSelector() {
                   onChange={(e) => switchScoreSet(e.target.value)}
                   className="form-input"
                   style={{
+                    backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
                     borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
                   }}
                 >

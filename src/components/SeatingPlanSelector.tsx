@@ -133,14 +133,13 @@ export default function SeatingPlanSelector() {
     id: string;
     name: string;
     description: string;
-    color?: string;
   } | null>(null);
 
   const plans = classId ? getPlansForClass(classId) : [];
   const currentPlan = getCurrentPlan();
   const currentScoreSet = getCurrentScoreSet();
 
-  function handleEdit(plan: { id: string; name: string; description: string; color?: string }) {
+  function handleEdit(plan: { id: string; name: string; description: string }) {
     setEditingPlan(plan);
     setIsEditModalOpen(true);
   }
@@ -195,9 +194,10 @@ export default function SeatingPlanSelector() {
               <select
                 value={currentPlan?.id || ''}
                 onChange={(e) => switchPlan(e.target.value)}
-                className="form-input text-white font-bold"
+                className="form-input"
                 style={{
-                  backgroundColor: currentPlan?.color || '#d50f25'
+                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
+                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
                 }}
               >
                 {plans.map((plan) => (
@@ -205,8 +205,8 @@ export default function SeatingPlanSelector() {
                     key={plan.id} 
                     value={plan.id}
                     style={{
-                      backgroundColor: plan.color || '#d50f25',
-                      color: 'white'
+                      backgroundColor: `${plan.color || '#d50f25'}20`,
+                      color: '#000'
                     }}
                   >
                     {plan.name}
@@ -257,20 +257,11 @@ export default function SeatingPlanSelector() {
                   onChange={(e) => switchScoreSet(e.target.value)}
                   className="form-input"
                   style={{
-                    backgroundColor: currentScoreSet?.color || '#3369e8',
-                    color: 'white',
-                    fontWeight: 'bold'
+                    borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
                   }}
                 >
                   {currentPlan && Object.entries(currentPlan.scoreSets).map(([id, scoreSet]) => (
-                    <option 
-                      key={id} 
-                      value={id}
-                      style={{
-                        backgroundColor: scoreSet.color || '#3369e8',
-                        color: 'white'
-                      }}
-                    >
+                    <option key={id} value={id}>
                       {scoreSet.name}
                     </option>
                   ))}
@@ -290,6 +281,7 @@ export default function SeatingPlanSelector() {
               {currentPlan && Object.keys(currentPlan.scoreSets).length > 1 && (
                 <button
                   onClick={handleDeleteScoreSet}
+                  disabled={!currentScoreSet}
                   className="p-2 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
                   title="Delete selected score set"
                 >

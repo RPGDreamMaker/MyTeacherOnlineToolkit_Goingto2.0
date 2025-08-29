@@ -596,10 +596,20 @@ export const useSeatingStore = create<SeatingState>()(
                     [currentScoreSet.id]: {
                       ...plan.scoreSets[currentScoreSet.id],
                       scores: Object.fromEntries(
-                    currentPlan.seats.map(seat => [
-                      seat.studentId,
-                      Math.max(0, score)
-                    ])
+                        currentPlan.seats
+                          .filter(seat => !get().isStudentAbsent(seat.studentId))
+                          .map(seat => [
+                            seat.studentId,
+                            Math.max(0, score)
+                          ])
+                          .concat(
+                            currentPlan.seats
+                              .filter(seat => get().isStudentAbsent(seat.studentId))
+                              .map(seat => [
+                                seat.studentId,
+                                currentScoreSet.scores[seat.studentId] || 0
+                              ])
+                          )
                       )
                     }
                   },

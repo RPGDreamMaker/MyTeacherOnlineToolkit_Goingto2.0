@@ -196,8 +196,8 @@ export default function SeatingPlanSelector() {
                 onChange={(e) => switchPlan(e.target.value)}
                 className="form-input"
                 style={{
-                  backgroundColor: currentScoreSet?.color ? `${currentScoreSet.color}20` : undefined,
-                  borderLeft: currentScoreSet?.color ? `4px solid ${currentScoreSet.color}` : undefined
+                  backgroundColor: currentPlan?.color ? `${currentPlan.color}20` : undefined,
+                  borderLeft: currentPlan?.color ? `4px solid ${currentPlan.color}` : undefined
                 }}
               >
                 {plans.map((plan) => (
@@ -205,7 +205,7 @@ export default function SeatingPlanSelector() {
                     key={plan.id} 
                     value={plan.id}
                     style={{
-                      backgroundColor: `${plan.color || '#d50f25'}20`,
+                      backgroundColor: plan.color || '#d50f25',
                       color: '#000'
                     }}
                   >
@@ -219,9 +219,6 @@ export default function SeatingPlanSelector() {
               disabled={!currentPlan}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
               title="Edit selected plan"
-              style={{
-                color: currentPlan?.color || undefined
-              }}
             >
               <Pencil className="h-4 w-4" />
             </button>

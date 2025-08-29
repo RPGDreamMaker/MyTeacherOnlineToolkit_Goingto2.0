@@ -133,7 +133,7 @@ export const useClassesStore = create<ClassesState>()(
         const state = get();
         const classData = state.classes.find(c => c.id === classId);
         return classData?.absentStudents?.includes(studentId) || false;
-      }))
+      }
     }),
     {
       name: 'classes-storage'

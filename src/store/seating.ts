@@ -438,6 +438,33 @@ export const useSeatingStore = create<SeatingState>()(
         }));
       },
 
+      selectStudentsByScore: (targetScore) => {
+        const currentPlan = get().getCurrentPlan();
+        const currentScoreSet = get().getCurrentScoreSet();
+        if (!currentPlan || !currentScoreSet) return;
+        
+        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
+
+        const studentsWithScore = currentPlan.seats
+          .filter(seat => {
+            const score = currentScoreSet.scores[seat.studentId] || 0;
+            return score === targetScore && !isStudentAbsent(currentPlan.classId, seat.studentId);
+          })
+          .map(seat => seat.studentId);
+
+        set(state => ({
+          plans: state.plans.map(plan =>
+            plan.id === currentPlan.id
+              ? {
+                  ...plan,
+                  selectedStudents: studentsWithScore,
+                  modifiedAt: new Date().toISOString()
+                }
+              : plan
+          )
+        }));
+      },
+
       getStudent: (id, classId) => {
         const classStudents = get().students[classId] || [];
         return classStudents.find(s => s.id === id);

@@ -4,7 +4,7 @@ import { useSeatingStore } from '../store/seating';
 
 export default function SelectionButtons() {
   const [isLoading, setIsLoading] = useState(false);
-  const { getCurrentPlan, getRandomStudents, getRandomStudentsFromSides, clearSelectedStudents } = useSeatingStore();
+  const { getCurrentPlan, getRandomStudents, getRandomStudentsFromSides, clearSelectedStudents, selectStudentsByScore } = useSeatingStore();
   const currentPlan = getCurrentPlan();
 
   if (!currentPlan) return null;
@@ -31,6 +31,15 @@ export default function SelectionButtons() {
     setIsLoading(true);
     try {
       await clearSelectedStudents();
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleScoreSelection(score: number) {
+    setIsLoading(true);
+    try {
+      await selectStudentsByScore(score);
     } finally {
       setIsLoading(false);
     }
@@ -102,6 +111,25 @@ export default function SelectionButtons() {
           {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
           Cancel All Selection
         </button>
+      </div>
+      
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <h4 className="text-sm font-medium text-gray-700 mb-3">Select Students by Score</h4>
+        <div className="grid grid-cols-10 gap-1">
+          {Array.from({ length: 21 }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => handleScoreSelection(i)}
+              disabled={isLoading}
+              className="px-2 py-1 text-xs font-medium rounded border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition-colors disabled:opacity-50"
+            >
+              {i}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Click a number to highlight all students with that exact score
+        </p>
       </div>
     </div>
   );

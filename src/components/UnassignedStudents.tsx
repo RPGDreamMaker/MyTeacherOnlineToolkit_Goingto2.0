@@ -5,11 +5,12 @@ import StudentCard from './StudentCard';
 
 export default function UnassignedStudents() {
   const { classId } = useParams<{ classId: string }>();
-  const { getUnassignedStudents, updateSeat } = useSeatingStore();
+  const { getUnassignedStudents, updateSeat, getCurrentPlan } = useSeatingStore();
   
   if (!classId) return null;
   
   const unassignedStudents = getUnassignedStudents(classId);
+  const currentPlan = getCurrentPlan();
 
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
@@ -24,8 +25,13 @@ export default function UnassignedStudents() {
     }
   }
 
+  const gridStyle = currentPlan ? {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${currentPlan.gridSettings.cols}, minmax(0, 1fr))`,
+    gap: '1rem',
+  } : {};
   return (
-    <div 
+    <div
       className="bg-white rounded-lg shadow-lg p-6"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -35,27 +41,29 @@ export default function UnassignedStudents() {
         <h2 className="section-heading">Unassigned Students</h2>
       </div>
 
-      <div className={`
-        grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-2
-        min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-4
-      `}>
-        {unassignedStudents.length === 0 ? (
-          <div className="col-span-full flex items-center justify-center text-gray-500">
-            Drag students here to unassign them
-          </div>
-        ) : (
-          unassignedStudents.map((student) => (
-            <div
-              key={student.id}
-              className="aspect-square border-2 border-gray-200 rounded-lg p-2 hover:border-blue-400 transition-colors"
-            >
-              <StudentCard
-                studentId={student.id}
-                isDraggable
-              />
+      <div className="max-w-[1400px] mx-auto">
+        <div 
+          className="min-h-[120px] border-2 border-dashed border-gray-200 rounded-lg p-8"
+          style={gridStyle}
+        >
+          {unassignedStudents.length === 0 ? (
+            <div className="col-span-full flex items-center justify-center text-gray-500">
+              Drag students here to unassign them
             </div>
-          ))
-        )}
+          ) : (
+            unassignedStudents.map((student) => (
+              <div
+                key={student.id}
+                className="aspect-square border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 transition-colors"
+              >
+                <StudentCard
+                  studentId={student.id}
+                  isDraggable
+                />
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

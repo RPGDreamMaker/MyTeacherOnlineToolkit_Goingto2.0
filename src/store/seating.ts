@@ -730,10 +730,8 @@ export const useSeatingStore = create<SeatingState>()(
 
         const assignedStudentIds = new Set(currentPlan.seats.map(s => s.studentId));
         
-        const isStudentAbsent = useClassesStore.getState().isStudentAbsent;
-        
         return classStudents.filter(student => 
-          !assignedStudentIds.has(student.id) && !isStudentAbsent(classId, student.id)
+          !assignedStudentIds.has(student.id)
         );
       },
 

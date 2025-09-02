@@ -31,6 +31,12 @@ function EditPlanModal({
   const { createPlan, updatePlan } = useSeatingStore();
   const { classId } = useParams<{ classId: string }>();
 
+  // Update state when props change
+  React.useEffect(() => {
+    setName(initialName);
+    setColor(initialColor);
+  }, [initialName, initialColor]);
+
   if (!isOpen) return null;
 
   function handleSubmit(e: React.FormEvent) {

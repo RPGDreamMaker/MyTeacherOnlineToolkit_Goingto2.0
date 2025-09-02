@@ -437,6 +437,12 @@ function RenameScoreSetModal({ isOpen, onClose, currentName, currentColor, onSav
   const [name, setName] = useState(currentName);
   const [color, setColor] = useState(currentColor);
 
+  // Update state when props change
+  React.useEffect(() => {
+    setName(currentName);
+    setColor(currentColor);
+  }, [currentName, currentColor]);
+
   if (!isOpen) return null;
 
   function handleSubmit(e: React.FormEvent) {

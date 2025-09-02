@@ -84,7 +84,7 @@ function EditPlanModal({
               type="submit"
               className="btn-primary"
             >
-              {planId ? 'Save Changes' : 'Create Plan'}
+              {planId ? 'Save Changes' : 'Create Wheel'}
             </button>
           </div>
         </form>

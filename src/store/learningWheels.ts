@@ -4,7 +4,7 @@ import { LearningWheel, LearningSlice } from '../types/learningWheel';
 
 interface LearningWheelsState {
   learningWheels: LearningWheel[];
-  addLearningWheel: (name: string, description?: string) => void;
+  addLearningWheel: (name: string, description?: string, slices?: Array<{ name: string; url: string }>) => void;
   updateLearningWheel: (wheelId: string, updates: Partial<Omit<LearningWheel, 'id' | 'createdAt'>>) => void;
   deleteLearningWheel: (wheelId: string) => void;
   addSlice: (wheelId: string, name: string, url: string) => void;
@@ -18,12 +18,18 @@ export const useLearningWheelsStore = create<LearningWheelsState>()(
     (set, get) => ({
       learningWheels: [],
 
-      addLearningWheel: (name, description) => {
+      addLearningWheel: (name, description, slices = []) => {
+        const wheelSlices: LearningSlice[] = slices.map(slice => ({
+          id: crypto.randomUUID(),
+          name: slice.name,
+          url: slice.url
+        }));
+
         const newWheel: LearningWheel = {
           id: crypto.randomUUID(),
           name,
           description,
-          slices: [],
+          slices: wheelSlices,
           createdAt: new Date().toISOString(),
           modifiedAt: new Date().toISOString(),
         };

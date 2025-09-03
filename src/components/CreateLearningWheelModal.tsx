@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 interface CreateLearningWheelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, description?: string) => void;
+  onSave: (name: string, description?: string, slices?: Array<{ name: string; url: string }>) => void;
 }
 
 export default function CreateLearningWheelModal({
@@ -14,19 +14,48 @@ export default function CreateLearningWheelModal({
 }: CreateLearningWheelModalProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [slicesInput, setSlicesInput] = useState('');
+  const [defaultUrl, setDefaultUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
 
+  function parseSlices(input: string, defaultUrl: string): Array<{ name: string; url: string }> {
+    if (!input.trim()) return [];
+    
+    return input
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0)
+      .map(line => {
+        // Check if line contains " - " for name - url format
+        if (line.includes(' - ')) {
+          const [sliceName, sliceUrl] = line.split(' - ', 2);
+          return {
+            name: sliceName.trim(),
+            url: sliceUrl.trim() || defaultUrl
+          };
+        } else {
+          // Just a name, use default URL
+          return {
+            name: line.trim(),
+            url: defaultUrl
+          };
+        }
+      });
+  }
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!name.trim() || isLoading) return;
 
     setIsLoading(true);
     try {
-      await onSave(name.trim(), description.trim() || undefined);
+      const slices = parseSlices(slicesInput, defaultUrl);
+      await onSave(name.trim(), description.trim() || undefined, slices);
       setName('');
       setDescription('');
+      setSlicesInput('');
+      setDefaultUrl('');
       onClose();
     } catch (err) {
       console.error('Failed to create learning wheel:', err);
@@ -37,7 +66,7 @@ export default function CreateLearningWheelModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full">
+      <div className="bg-white rounded-lg max-w-2xl w-full">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="modal-title">Create New Learning Wheel</h2>
           <button
@@ -78,6 +107,42 @@ export default function CreateLearningWheelModal({
             />
           </div>
 
+          <div>
+            <label htmlFor="defaultUrl" className="form-label">
+              Default URL (Optional)
+            </label>
+            <input
+              type="url"
+              id="defaultUrl"
+              value={defaultUrl}
+              onChange={(e) => setDefaultUrl(e.target.value)}
+              className="form-input"
+              placeholder="https://example.com (used for slices without specific URLs)"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="slicesInput" className="form-label">
+              Slices (Optional)
+            </label>
+            <textarea
+              id="slicesInput"
+              value={slicesInput}
+              onChange={(e) => setSlicesInput(e.target.value)}
+              rows={8}
+              className="form-input"
+              placeholder="Present Perfect&#10;Past Simple&#10;Future Tense&#10;Conditionals - https://example.com/conditionals&#10;Modal Verbs&#10;Passive Voice"
+            />
+            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-medium text-blue-800 text-sm mb-1">Input Format:</h4>
+              <ul className="text-xs text-blue-700 space-y-1">
+                <li>• <strong>Simple:</strong> Just the slice name (e.g., "Present Perfect")</li>
+                <li>• <strong>With URL:</strong> Name - URL (e.g., "Conditionals - https://example.com")</li>
+                <li>• One slice per line</li>
+                <li>• Slices without URLs will use the default URL above</li>
+              </ul>
+            </div>
+          </div>
           <div className="flex justify-end gap-3">
             <button
               type="button"

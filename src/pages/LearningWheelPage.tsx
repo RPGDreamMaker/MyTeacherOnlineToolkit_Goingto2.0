@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useLearningWheelsStore } from '../store/learningWheels';
-import { ArrowLeft, Plus, Pencil, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, Edit } from 'lucide-react';
 import LearningWheelComponent from '../components/LearningWheelComponent';
 import SliceDetailsModal from '../components/SliceDetailsModal';
 import CreateSliceModal from '../components/CreateSliceModal';
 import EditSliceModal from '../components/EditSliceModal';
+import EditWheelBulkModal from '../components/EditWheelBulkModal';
 import { LearningSlice } from '../types/learningWheel';
 
 export default function LearningWheelPage() {
   const { wheelId } = useParams<{ wheelId: string }>();
-  const { getLearningWheel, addSlice, updateSlice, deleteSlice } = useLearningWheelsStore();
+  const { getLearningWheel, addSlice, updateSlice, deleteSlice, updateLearningWheel } = useLearningWheelsStore();
   const [selectedSlice, setSelectedSlice] = useState<LearningSlice | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isCreateSliceModalOpen, setIsCreateSliceModalOpen] = useState(false);
   const [editingSlice, setEditingSlice] = useState<LearningSlice | null>(null);
+  const [isEditWheelModalOpen, setIsEditWheelModalOpen] = useState(false);
 
   const wheel = wheelId ? getLearningWheel(wheelId) : null;
 
@@ -63,6 +65,14 @@ export default function LearningWheelPage() {
                   <p className="text-gray-600 mt-1">{wheel.description}</p>
                 )}
               </div>
+              <button
+                onClick={() => setIsEditWheelModalOpen(true)}
+                disabled={isSpinning}
+                className="flex items-center gap-2 btn-secondary disabled:opacity-50 mr-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Wheel
+              </button>
               <button
                 onClick={() => setIsCreateSliceModalOpen(true)}
                 disabled={isSpinning}
@@ -142,6 +152,26 @@ export default function LearningWheelPage() {
           if (editingSlice) {
             updateSlice(wheel.id, editingSlice.id, updates);
             setEditingSlice(null);
+          }
+        }}
+      />
+
+      <EditWheelBulkModal
+        isOpen={isEditWheelModalOpen}
+        onClose={() => setIsEditWheelModalOpen(false)}
+        wheel={wheel}
+        onSave={(name, description, slices) => {
+          if (wheel) {
+            updateLearningWheel(wheel.id, {
+              name,
+              description,
+              slices: slices.map(slice => ({
+                id: crypto.randomUUID(),
+                name: slice.name,
+                url: slice.url
+              }))
+            });
+            setIsEditWheelModalOpen(false);
           }
         }}
       />

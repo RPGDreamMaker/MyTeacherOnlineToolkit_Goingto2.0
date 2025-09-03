@@ -20,11 +20,11 @@ export default function CreateSliceModal({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !url.trim() || isLoading) return;
+    if (!name.trim() || isLoading) return;
 
     setIsLoading(true);
     try {
-      await onSave(name.trim(), url.trim());
+      await onSave(name.trim(), url.trim() || '');
       setName('');
       setUrl('');
       onClose();

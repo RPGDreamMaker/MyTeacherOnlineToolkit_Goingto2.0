@@ -30,13 +30,13 @@ export default function EditSliceModal({
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !url.trim() || isLoading) return;
+    if (!name.trim() || isLoading) return;
 
     setIsLoading(true);
     try {
       await onSave({
         name: name.trim(),
-        url: url.trim(),
+        url: url.trim() || '',
       });
       onClose();
     } catch (err) {

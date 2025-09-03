@@ -1,21 +1,16 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useLearningWheelsStore } from '../store/learningWheels';
-import { ArrowLeft, Plus, Pencil, Trash2, Edit } from 'lucide-react';
+import { ArrowLeft, Edit } from 'lucide-react';
 import LearningWheelComponent from '../components/LearningWheelComponent';
 import SliceDetailsModal from '../components/SliceDetailsModal';
-import CreateSliceModal from '../components/CreateSliceModal';
-import EditSliceModal from '../components/EditSliceModal';
 import EditWheelBulkModal from '../components/EditWheelBulkModal';
-import { LearningSlice } from '../types/learningWheel';
 
 export default function LearningWheelPage() {
   const { wheelId } = useParams<{ wheelId: string }>();
-  const { getLearningWheel, addSlice, updateSlice, deleteSlice, updateLearningWheel } = useLearningWheelsStore();
-  const [selectedSlice, setSelectedSlice] = useState<LearningSlice | null>(null);
+  const { getLearningWheel, updateLearningWheel } = useLearningWheelsStore();
+  const [selectedSlice, setSelectedSlice] = useState<any>(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [isCreateSliceModalOpen, setIsCreateSliceModalOpen] = useState(false);
-  const [editingSlice, setEditingSlice] = useState<LearningSlice | null>(null);
   const [isEditWheelModalOpen, setIsEditWheelModalOpen] = useState(false);
 
   const wheel = wheelId ? getLearningWheel(wheelId) : null;
@@ -37,11 +32,6 @@ export default function LearningWheelPage() {
     );
   }
 
-  function handleDeleteSlice(sliceId: string) {
-    if (confirm('Are you sure you want to delete this slice?')) {
-      deleteSlice(wheel.id, sliceId);
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -68,55 +58,12 @@ export default function LearningWheelPage() {
               <button
                 onClick={() => setIsEditWheelModalOpen(true)}
                 disabled={isSpinning}
-                className="flex items-center gap-2 btn-secondary disabled:opacity-50 mr-2"
+                className="flex items-center gap-2 btn-primary disabled:opacity-50"
               >
                 <Edit className="h-4 w-4" />
                 Edit Wheel
               </button>
-              <button
-                onClick={() => setIsCreateSliceModalOpen(true)}
-                disabled={isSpinning}
-                className="flex items-center gap-2 btn-primary disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4" />
-                Add Slice
-              </button>
             </div>
-
-            {wheel.slices.length > 0 && (
-              <div className="mb-6">
-                <h3 className="section-heading mb-3">Slices ({wheel.slices.length})</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {wheel.slices.map((slice) => (
-                    <div
-                      key={slice.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{slice.name}</p>
-                        <p className="text-sm text-gray-500 truncate">{slice.url}</p>
-                      </div>
-                      <div className="flex gap-2 ml-2">
-                        <button
-                          onClick={() => setEditingSlice(slice)}
-                          disabled={isSpinning}
-                          className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSlice(slice.id)}
-                          disabled={isSpinning}
-                          className="text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex justify-center">
@@ -133,27 +80,6 @@ export default function LearningWheelPage() {
       <SliceDetailsModal
         slice={selectedSlice}
         onClose={() => setSelectedSlice(null)}
-      />
-
-      <CreateSliceModal
-        isOpen={isCreateSliceModalOpen}
-        onClose={() => setIsCreateSliceModalOpen(false)}
-        onSave={(name, url) => {
-          addSlice(wheel.id, name, url);
-          setIsCreateSliceModalOpen(false);
-        }}
-      />
-
-      <EditSliceModal
-        isOpen={Boolean(editingSlice)}
-        onClose={() => setEditingSlice(null)}
-        slice={editingSlice}
-        onSave={(updates) => {
-          if (editingSlice) {
-            updateSlice(wheel.id, editingSlice.id, updates);
-            setEditingSlice(null);
-          }
-        }}
       />
 
       <EditWheelBulkModal
